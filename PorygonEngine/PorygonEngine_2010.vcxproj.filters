@@ -1,35 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns:atg="http://atg.xbox.com" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<ItemGroup>
-<Filter Include="Resource Files">
-<UniqueIdentifier>{8e114980-c1a3-4ada-ad7c-83caadf5daeb}</UniqueIdentifier>
-<Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
-</Filter>
-<Filter Include="DXUT">
-<UniqueIdentifier>{a43c5c25-0e86-4a20-b64a-883785ff74fd}</UniqueIdentifier>
-</Filter>
-<Filter Include="Shaders">
-<UniqueIdentifier>{2c3d4c8c-5d1a-459a-a05a-a4e4b608a44e}</UniqueIdentifier>
-<Extensions>fx;fxh;hlsl</Extensions>
-</Filter>
-</ItemGroup>
-<ItemGroup />
-<ItemGroup>
-      <ClCompile Include="PorygonEngine.cpp" />
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{8e114980-c1a3-4ada-ad7c-83caadf5daeb}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="DXUT">
+      <UniqueIdentifier>{a43c5c25-0e86-4a20-b64a-883785ff74fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{2c3d4c8c-5d1a-459a-a05a-a4e4b608a44e}</UniqueIdentifier>
+      <Extensions>fx;fxh;hlsl</Extensions>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{28eaf4cf-9eb9-4715-baf2-14cc4564e05d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{1409e15f-c6ad-4406-97cc-24241f5c7387}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
-<ItemGroup>
-      <None Include="PorygonEngine.fx">
-<Filter>Shaders</Filter>
-</None>
+  <ItemGroup>
+    <ClCompile Include="PorygonEngine.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Window.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
-<ItemGroup>
-      <CLInclude Include="resource.h">
-<Filter>Resource Files</Filter>
-</CLInclude>
-      <ResourceCompile Include="PorygonEngine.rc">
-<Filter>Resource Files</Filter>
-</ResourceCompile>
+  <ItemGroup>
+    <None Include="PorygonEngine.fx">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
-<ItemGroup>
-</ItemGroup>
+  <ItemGroup>
+    <CLInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
+    </CLInclude>
+    <ResourceCompile Include="PorygonEngine.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ClInclude Include="Include\Window.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Prerequisites.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Resource.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
 </Project>

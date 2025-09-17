@@ -428,12 +428,16 @@
   <ItemGroup />
   <ItemGroup>
     <ClCompile Include="PorygonEngine.cpp" />
+    <ClCompile Include="source\Device.cpp" />
+    <ClCompile Include="source\DeviceContext.cpp" />
     <ClCompile Include="source\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PorygonEngine.fx" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Device.h" />
+    <ClInclude Include="include\DeviceContext.h" />
     <ClInclude Include="Include\Prerequisites.h" />
     <ClInclude Include="include\Resource.h" />
     <ClInclude Include="Include\Window.h" />

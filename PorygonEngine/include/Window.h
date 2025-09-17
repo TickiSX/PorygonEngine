@@ -1,30 +1,19 @@
-#pragma once
+﻿#pragma once
 #include "Prerequisites.h"
+#include <string>
 
-class
-	Window {
+class Window {
 public:
-	Window() = default;
-	~Window() = default;
+	HRESULT init(HINSTANCE hInstance, int nCmdShow, WNDPROC wndproc);
+	void update();
+	void render();
+	void destroy();
 
-	HRESULT
-		init(HINSTANCE hInstance, int nCmdShow, WNDPROC wndproc);
-
-	void
-		update();
-
-	void
-		render();
-
-	void
-		destroy();
-
-public:
-	HWND m_hWnd = nullptr;
-	unsigned int m_width;
-	unsigned int m_height;
-private:
-	HINSTANCE m_hInst = nullptr;
-	RECT m_rect;
-	std::string m_windowName = "Wildvine Engine";
+	// P�blicos para compatibilidad con tu c�digo existente
+	HINSTANCE    m_hInst = nullptr;
+	HWND         m_hWnd = nullptr;
+	RECT         m_rect{ 0,0,0,0 };
+	int          m_width = 0;
+	int          m_height = 0;
+	std::wstring m_windowName = L"HeliosEngine";
 };

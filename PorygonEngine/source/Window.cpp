@@ -11,11 +11,11 @@ HRESULT Window::init(HINSTANCE hInstance, int nCmdShow, WNDPROC wndproc) {
     wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc = wndproc;
     wc.hInstance = m_hInst;
-    wc.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
-    wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+    wc.hIcon = LoadIconW(nullptr, MAKEINTRESOURCEW(IDI_APPLICATION));
+    wc.hIconSm = LoadIconW(nullptr, MAKEINTRESOURCEW(IDI_APPLICATION));
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszClassName = kClass;
-    wc.hIconSm = LoadIconW(nullptr, IDI_APPLICATION);
+    wc.hIconSm = LoadIconW(nullptr, MAKEINTRESOURCEW(IDI_APPLICATION));
 
     if (!RegisterClassExW(&wc))
         return HRESULT_FROM_WIN32(GetLastError());
@@ -24,7 +24,7 @@ HRESULT Window::init(HINSTANCE hInstance, int nCmdShow, WNDPROC wndproc) {
     m_rect = rc;
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
-    const wchar_t* title = m_windowName.empty() ? L"Porygongine" : m_windowName.c_str();
+    const wchar_t* title = m_windowName.empty() ? L"PorygonEngine" : m_windowName.c_str();
 
     m_hWnd = CreateWindowExW(
         0, kClass, title, WS_OVERLAPPEDWINDOW,

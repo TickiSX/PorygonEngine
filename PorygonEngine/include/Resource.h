@@ -3,7 +3,7 @@
  * @brief Identificadores de recursos de la app (iconos, men�s, di�logos, etc.).
  *
  * @details
- * Archivo generado por Visual C++ para el script de recursos `PorygonEngine.rc`.
+ * Archivo generado por Visual C++ para el script de recursos `Tutorial07.rc`.
  * Estos IDs son usados por el compilador de recursos (RC) y por el c�digo C/C++.
  * No modifiques los valores salvo que tambi�n actualices el `.rc`.
  *
@@ -11,14 +11,14 @@
  * Si necesitas conservar comentarios Doxygen, verifica que no se sobrescriban.
  */
 
- /** @defgroup ResourceIDs Identificadores de recurso de PorygonEngine
-  *  @brief Conjunto de constantes usadas por `PorygonEngine.rc`.
+ /** @defgroup ResourceIDs Identificadores de recurso de Tutorial07
+  *  @brief Conjunto de constantes usadas por `Tutorial07.rc`.
   *  @{
   */
 
   //{{NO_DEPENDENCIES}}
   // Microsoft Visual C++ generated include file.
-  // Used by PorygonEngine.rc
+  // Used by Tutorial07.rc
   //
 
   /** @name Cadenas (String Table) */
@@ -76,4 +76,3 @@
 #endif
 
 /** @} */ // end of group ResourceIDs
-// End of resource.h

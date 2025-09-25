@@ -82,5 +82,5 @@ public:
 	 * @brief T�tulo/nombre de la ventana (Unicode).
 	 * @note Puedes cambiarlo antes de llamar a `init()` para personalizar el caption.
 	 */
-	std::wstring m_windowName = L"HeliosEngine";
+	std::wstring m_windowName = L"PorygonEngine";
 };

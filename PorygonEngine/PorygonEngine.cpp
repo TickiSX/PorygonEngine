@@ -1,4 +1,4 @@
-﻿// Tutorial07.cpp � DX11 minimal + Device + DeviceContext (sin D3DX, sin xnamath)
+﻿// Tutorial07.cpp – DX11 minimal + Device + DeviceContext (sin D3DX, sin xnamath)
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -16,66 +16,13 @@
 // Wrappers propios
 #include "../include/Device.h"
 #include "../include/DeviceContext.h"
+#include "../include/Window.h" // <-- Usamos tu header, no definimos la clase aquí
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
 using Microsoft::WRL::ComPtr;
-
-// =============================
-// Ventana (m�nima, Unicode)
-// =============================
-class Window {
-public:
-    HRESULT init(HINSTANCE hInst, int nCmdShow, WNDPROC wndproc) {
-        m_hInst = hInst;
-        static const wchar_t* kClass = L"DX11SampleWindowClass";
-
-        WNDCLASSEXW wc{};
-        wc.cbSize = sizeof(wc);
-        wc.style = CS_HREDRAW | CS_VREDRAW;
-        wc.lpfnWndProc = wndproc;
-        wc.hIcon = LoadIconW(nullptr, MAKEINTRESOURCEW(IDI_APPLICATION));
-        wc.hCursor = LoadCursorW(nullptr, MAKEINTRESOURCEW(IDC_ARROW));
-        wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-        wc.lpszClassName = kClass;
-        wc.hIconSm = LoadIconW(nullptr, MAKEINTRESOURCEW(IDI_APPLICATION));
-        if (!RegisterClassExW(&wc)) return HRESULT_FROM_WIN32(GetLastError());
-
-        RECT rc{ 0,0,1200,950 };
-        AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-
-        const wchar_t* title = L"PorygonEngine (Device + DeviceContext)";
-        m_hWnd = CreateWindowExW(0, kClass, title, WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT, CW_USEDEFAULT,
-            rc.right - rc.left, rc.bottom - rc.top,
-            nullptr, nullptr, hInst, nullptr);
-        if (!m_hWnd) return HRESULT_FROM_WIN32(GetLastError());
-
-        ShowWindow(m_hWnd, nCmdShow);
-        UpdateWindow(m_hWnd);
-        updateClientSize();
-        return S_OK;
-    }
-
-    void updateClientSize() {
-        RECT r{};
-        GetClientRect(m_hWnd, &r);
-        m_width = r.right - r.left;
-        m_height = r.bottom - r.top;
-    }
-
-    HWND handle() const { return m_hWnd; }
-    int  width()  const { return m_width; }
-    int  height() const { return m_height; }
-
-private:
-    HINSTANCE m_hInst = nullptr;
-    HWND      m_hWnd = nullptr;
-    int       m_width = 0;
-    int       m_height = 0;
-};
 
 // =============================
 // Shaders embebidos (HLSL)
@@ -107,7 +54,7 @@ float4 PS(VS_OUTPUT i) : SV_Target {
 }
 )";
 
-// Compilaci�n desde memoria
+// Compilación desde memoria
 static HRESULT CompileFromSource(const char* src, const char* entry, const char* target, ID3DBlob** blobOut) {
     UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
@@ -142,7 +89,7 @@ struct CBChangesEveryFrame { DirectX::XMMATRIX mWorld; DirectX::XMFLOAT4 vMeshCo
 static Window                           g_window;
 static Device                           g_device;     // contiene: ID3D11Device* m_device
 static DeviceContext                    g_devctx;     // wrapper del contexto inmediato
-static ComPtr<ID3D11DeviceContext>      g_ctx;        // due�o real del contexto
+static ComPtr<ID3D11DeviceContext>      g_ctx;        // dueño real del contexto
 static ComPtr<IDXGISwapChain>           g_swap;
 static ComPtr<ID3D11RenderTargetView>   g_rtv;
 static ComPtr<ID3D11Texture2D>          g_depth;
@@ -196,13 +143,13 @@ static HRESULT InitDevice() {
     // SwapChain
     DXGI_SWAP_CHAIN_DESC sd{};
     sd.BufferCount = 1;
-    sd.BufferDesc.Width = g_window.width();
-    sd.BufferDesc.Height = g_window.height();
+    sd.BufferDesc.Width = g_window.m_width;   // <- uso de miembro público
+    sd.BufferDesc.Height = g_window.m_height; // <- uso de miembro público
     sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     sd.BufferDesc.RefreshRate.Numerator = 60;
     sd.BufferDesc.RefreshRate.Denominator = 1;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    sd.OutputWindow = g_window.handle();
+    sd.OutputWindow = g_window.m_hWnd;        // <- uso de miembro público
     sd.SampleDesc.Count = 1;
     sd.Windowed = TRUE;
 
@@ -232,7 +179,7 @@ static HRESULT InitDevice() {
 
     // Depth + DSV
     D3D11_TEXTURE2D_DESC d{};
-    d.Width = g_window.width(); d.Height = g_window.height();
+    d.Width = g_window.m_width; d.Height = g_window.m_height;
     d.MipLevels = 1; d.ArraySize = 1;
     d.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
     d.SampleDesc.Count = 1;
@@ -242,7 +189,7 @@ static HRESULT InitDevice() {
     if (FAILED(g_device.m_device->CreateTexture2D(&d, nullptr, &g_depth))) return E_FAIL;
     if (FAILED(g_device.m_device->CreateDepthStencilView(g_depth.Get(), nullptr, &g_dsv))) return E_FAIL;
 
-    // OMSetRenderTargets a trav�s del wrapper de contexto
+    // OMSetRenderTargets a través del wrapper de contexto
     {
         ID3D11RenderTargetView* rtv = g_rtv.Get();
         g_devctx.OMSetRenderTargets(1, &rtv, g_dsv.Get());
@@ -250,8 +197,8 @@ static HRESULT InitDevice() {
 
     // Viewport
     D3D11_VIEWPORT vp{};
-    vp.Width = (FLOAT)g_window.width();
-    vp.Height = (FLOAT)g_window.height();
+    vp.Width = (FLOAT)g_window.m_width;
+    vp.Height = (FLOAT)g_window.m_height;
     vp.MinDepth = 0.f; vp.MaxDepth = 1.f;
     g_ctx->RSSetViewports(1, &vp);
 
@@ -271,7 +218,7 @@ static HRESULT InitDevice() {
     if (FAILED(g_device.m_device->CreateInputLayout(il, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &g_layout))) return E_FAIL;
     g_ctx->IASetInputLayout(g_layout.Get());
 
-    // Geometr�a: cubo
+    // Geometría: cubo
     SimpleVertex vertices[] = {
         { DirectX::XMFLOAT3(-1,  1, -1), DirectX::XMFLOAT2(0,0) }, { DirectX::XMFLOAT3(1,  1, -1), DirectX::XMFLOAT2(1,0) },
         { DirectX::XMFLOAT3(1,  1,  1), DirectX::XMFLOAT2(1,1) },  { DirectX::XMFLOAT3(-1,  1,  1), DirectX::XMFLOAT2(0,1) },
@@ -359,7 +306,7 @@ static HRESULT InitDevice() {
     g_ctx->UpdateSubresource(g_cbView.Get(), 0, nullptr, &cbV, 0, 0);
 
     gProj = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4,
-        (float)g_window.width() / (float)g_window.height(), 0.01f, 100.0f);
+        (float)g_window.m_width / (float)g_window.m_height, 0.01f, 100.0f);
     CBChangeOnResize cbP{ DirectX::XMMatrixTranspose(gProj) };
     g_ctx->UpdateSubresource(g_cbProj.Get(), 0, nullptr, &cbP, 0, 0);
 
@@ -394,7 +341,7 @@ static void Render() {
     DWORD t = GetTickCount();
     float secs = (t - t0) / 1000.0f;
 
-    // Animaci�n
+    // Animación
     gWorld = DirectX::XMMatrixRotationY(secs);
     gMeshColor = DirectX::XMFLOAT4(
         (sinf(secs * 1.0f) + 1.f) * 0.5f,
@@ -442,7 +389,7 @@ static void Render() {
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
     case WM_SIZE:
-        // (Opcional) recrear backbuffer/DSV y reproyecci�n aqu�.
+        // (Opcional) recrear backbuffer/DSV y reproyección aquí.
         break;
     case WM_KEYDOWN:
         if (wParam == VK_ESCAPE) PostQuitMessage(0);

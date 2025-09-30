@@ -75,4 +75,3 @@
 #endif
 #endif
 
-/** @} */ // end of group ResourceIDs

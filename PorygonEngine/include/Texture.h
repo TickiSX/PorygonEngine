@@ -1,134 +1,116 @@
 ﻿#pragma once
 #include "Prerequisites.h"
-#include <string>
 
-// Forward declarations de otros wrappers que usas con Texture.
-class Device;
-class DeviceContext;
+class
+    Device;
 
-/**
- * @brief Tipos de origen/extension de imagen soportados al cargar desde archivo.
- * @note Ajusta/expande seg�n tu pipeline real. Si ya lo defines en otro .h,
- *       elimina este enum aqu� y #include ese archivo.
- */
-enum class ExtensionType {
-    DDS,     ///< Texturas en formato DDS (ruta habitual en DX)
-    WIC,     ///< PNG/JPG/BMP/etc. v�a WIC
-    Unknown  ///< Desconocido/no especificado
-};
+class
+    DeviceContext;
 
 /**
  * @class Texture
- * @brief Wrapper m�nimo para manejar un ID3D11Texture2D y su SRV asociado.
+ * @brief Representa una textura en DirectX 11.
  *
- * Provee utilidades para:
- * - Crear una textura a partir de archivo o dimensiones.
- * - Envolver una textura existente (ej.: backbuffer del swap chain).
- * - Hacer bind de la SRV al pipeline de p�xeles.
- * - Liberar correctamente los recursos.
- *
- * @attention Esta clase NO gestiona RTV/DSV; s�lo textura y SRV.
+ * Esta clase encapsula la creaci�n, gesti�n y destrucci�n de texturas 2D
+ * en DirectX, as� como su vinculaci�n al pipeline gr�fico. Puede inicializarse
+ * desde archivo, como un recurso en memoria, o copiando otra textura.
  */
-class Texture {
+class
+    Texture {
 public:
-    /// Ctor/Dtor triviales (la liberaci�n real ocurre en destroy()).
+    /**
+     * @brief Constructor por defecto.
+     */
     Texture() = default;
+
+    /**
+     * @brief Destructor por defecto.
+     */
     ~Texture() = default;
 
     /**
-     * @brief Inicializa la textura cargando desde un archivo en disco.
-     * @param device        Dispositivo D3D11 a usar para crear recursos.
-     * @param textureName   Ruta o nombre del archivo (relativa o absoluta).
-     * @param extensionType Tipo de extensi�n/origen (DDS/WIC).
-     * @return S_OK en �xito, c�digo de error HRESULT en fallo.
+     * @brief Inicializa la textura desde un archivo de imagen.
      *
-     * @details
-     * - Para @c ExtensionType::DDS se espera cargar v�a rutina DDS.
-     * - Para @c ExtensionType::WIC se espera cargar v�a WIC (PNG/JPG/BMP, etc.).
-     * - Si necesitas mipmaps, flags de bind, etc., a�ade par�metros u
-     *   ofrece setters antes de crear la SRV.
+     * @param device Referencia al dispositivo de DirectX.
+     * @param textureName Nombre o ruta del archivo de la textura.
+     * @param extensionType Tipo de extensi�n de la textura (ej. PNG, JPG).
+     * @return HRESULT C�digo de resultado (S_OK si se carg� correctamente).
      */
-    HRESULT init(Device& device,
-        const std::string& textureName,
-        ExtensionType extensionType);
+    HRESULT
+        init(Device& device,
+            const std::string& textureName,
+            ExtensionType extensionType);
 
     /**
-     * @brief Crea una textura 2D a partir de dimensiones y formato (sin datos).
-     * @param device        Dispositivo D3D11.
-     * @param width         Ancho en texels.
-     * @param height        Alto en texels.
-     * @param format        Formato DXGI (p.ej. DXGI_FORMAT_R8G8B8A8_UNORM).
-     * @param BindFlags     Flags de enlace (p.ej. D3D11_BIND_SHADER_RESOURCE).
-     * @param sampleCount   Multisampling sample count (1 si no MSAA).
-     * @param qualityLevels Niveles de calidad MSAA (0 si no MSAA).
-     * @return S_OK en �xito, HRESULT en fallo.
+     * @brief Inicializa la textura como un recurso vac�o en memoria.
      *
-     * @note Esta variante crea la textura vac�a; si quieres inicializar datos,
-     *       usa un UpdateSubresource posterior o a�ade un par�metro con datos.
+     * @param device Referencia al dispositivo de DirectX.
+     * @param widht Ancho de la textura.
+     * @param height Alto de la textura.
+     * @param Format Formato de la textura (DXGI_FORMAT).
+     * @param BindFlags Banderas de enlace (ej. render target, shader resource).
+     * @param sampleCount N�mero de muestras para multisampling (default = 1).
+     * @param qualityLevels Niveles de calidad para multisampling (default = 0).
+     * @return HRESULT C�digo de resultado (S_OK si se cre� correctamente).
      */
-    HRESULT init(Device& device,
-        unsigned int width,
-        unsigned int height,
-        DXGI_FORMAT format,
-        unsigned int BindFlags,
-        unsigned int sampleCount = 1,
-        unsigned int qualityLevels = 0);
+    HRESULT
+        init(Device& device,
+            unsigned int width,
+            unsigned int height,
+            DXGI_FORMAT Format,
+            unsigned int BindFlags,
+            unsigned int sampleCount = 1,
+            unsigned int qualityLevels = 0);
 
     /**
-     * @brief Enlaza una textura ya existente para exponer una SRV con @p format.
-     * @param device      Dispositivo D3D11.
-     * @param textureRef  Otra @c Texture que ya contiene un @c ID3D11Texture2D.
-     * @param format      Formato de la SRV (debe ser compatible con la textura).
-     * @return S_OK en �xito, HRESULT en fallo.
+     * @brief Inicializa la textura copiando desde otra textura existente.
      *
-     * @details �til para envolver el backbuffer del swap chain y crear una SRV
-     *          de lectura (si el formato/flags lo permiten).
+     * @param device Referencia al dispositivo de DirectX.
+     * @param textureRef Textura de referencia para crear la nueva.
+     * @param format Formato de la textura (DXGI_FORMAT).
+     * @return HRESULT C�digo de resultado.
      */
-    HRESULT init(Device& device,
-        Texture& textureRef,
-        DXGI_FORMAT format);
+    HRESULT
+        init(Device& device, Texture& textureRef, DXGI_FORMAT format);
 
     /**
-     * @brief Punto de extensi�n para actualizar l�gica asociada a la textura.
-     * @details Vac�o por defecto; �salo si implementas streaming, anim, etc.
-     */
-    void update();
-
-    /**
-     * @brief Hace bind de la SRV al PS (pixel shader).
-     * @param deviceContext  Contexto inmediato (o diferido) a usar.
-     * @param StartSlot      Primer slot de SRV en el PS (t0, t1, ...).
-     * @param NumViews       N�mero de vistas a bindear (normalmente 1).
+     * @brief Actualiza el estado de la textura.
      *
-     * @note Internamente llama a @c ID3D11DeviceContext::PSSetShaderResources.
-     * @warning Debes haber creado @c m_textureFromImg (SRV) previamente.
+     * Placeholder para l�gica de actualizaci�n de texturas.
      */
-    void render(DeviceContext& deviceContext,
-        unsigned int StartSlot,
-        unsigned int NumViews);
+    void
+        update();
 
     /**
-     * @brief Libera los recursos de D3D11 (SRV + Texture2D).
-     * @details Deja los punteros a @c nullptr.
+     * @brief Renderiza la textura en el pipeline gr�fico.
+     *
+     * @param deviceContext Contexto del dispositivo de DirectX.
+     * @param StartSlot Slot de inicio donde se asignar� la textura.
+     * @param NumView N�mero de vistas de recurso de shader a asignar.
      */
-    void destroy();
+    void
+        render(DeviceContext& deviceContext, unsigned int StartSlot, unsigned int NumViews);
 
-public: // Miembros expuestos por simplicidad (puedes encapsularlos si prefieres)
     /**
-     * @brief Recurso base de textura 2D.
-     * @details Propiedad: se libera en @c destroy().
+     * @brief Libera los recursos asociados a la textura.
+     */
+    void
+        destroy();
+
+
+public:
+    /**
+     * @brief Puntero al recurso de textura 2D en DirectX 11.
      */
     ID3D11Texture2D* m_texture = nullptr;
 
     /**
-     * @brief Shader Resource View asociada a la textura (para lectura en shaders).
-     * @details Propiedad: se libera en @c destroy().
+     * @brief Vista de recurso de shader creada a partir de la textura.
      */
     ID3D11ShaderResourceView* m_textureFromImg = nullptr;
 
     /**
-     * @brief Nombre/Ruta de la textura (si se carg� desde archivo).
-     * @details Se usa s�lo como metadato informativo.
+     * @brief Nombre o ruta de la textura cargada.
      */
     std::string m_textureName;
 };

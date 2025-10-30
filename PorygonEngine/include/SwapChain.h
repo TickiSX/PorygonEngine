@@ -1,221 +1,130 @@
 ﻿#pragma once
 #include "Prerequisites.h"
 
-/**
- * @file SwapChain.h
- * @brief RAII m�nimo para manejar una DXGI Swap Chain y su Render Target View (RTV).
- *
- * @details
- * Esta clase encapsula:
- * - La **swap chain** de DXGI (`IDXGISwapChain`) responsable de presentar la imagen en pantalla.
- * - El **Render Target View** (`ID3D11RenderTargetView`) asociado al back-buffer actual.
- *
- * Ofrece dos niveles de API:
- * - **Alta nivel**: `init(...)` crea *Device + Immediate Context + Swap Chain + RTV* y
- *   devuelve el back-buffer como `Texture`.
- * - **Bajo nivel**: `create(...)`, `recreateRTV(...)`, `resize(...)`, `present(...)`,
- *   y utilidades de *bind* (`bindAsRenderTarget(...)`).
- *
- * @note La clase no administra `ID3D11Device` ni `ID3D11DeviceContext`; solo los usa.
- * @warning El back-buffer t�pico **no** soporta SRV. Para post-proceso, renderiza a un
- *          RT intermedio con `BIND_RENDER_TARGET | BIND_SHADER_RESOURCE` y resuelve/copia
- *          al back-buffer antes de `present()`.
- */
+class
+    Device;
 
- // ---------- Forward declarations de tus wrappers ----------
-class Device;
-class DeviceContext;
-class Window;
-class Texture;
+class
+    DeviceContext;
+
+class
+    Window;
+
+class
+    Texture;
 
 /**
  * @class SwapChain
- * @brief Envoltura de `IDXGISwapChain` + `ID3D11RenderTargetView` (back-buffer actual).
+ * @brief Encapsula la funcionalidad de un Swap Chain en DirectX 11.
  *
- * Propietaria de:
- * - `IDXGISwapChain* m_swap`
- * - `ID3D11RenderTargetView* m_rtv`
- *
- * No copiable (evita dobles `Release()`).
+ * El Swap Chain administra el intercambio de buffers entre el back buffer y
+ * el front buffer, lo cual permite mostrar los fotogramas renderizados en
+ * pantalla. Tambi�n gestiona la configuraci�n de multisampling para mejorar
+ * la calidad visual.
  */
-class SwapChain {
+class
+    SwapChain {
 public:
-    /// @brief Ctor por defecto (no crea recursos).
+    /**
+     * @brief Constructor por defecto.
+     */
     SwapChain() = default;
 
-    /// @brief Dtor: libera RTV y swap chain (equivalente a @ref destroy).
-    ~SwapChain() { destroy(); }
-
-    /// @name Sem�ntica de copia
-    /// @{
-    SwapChain(const SwapChain&) = delete;             ///< No copiable.
-    SwapChain& operator=(const SwapChain&) = delete;  ///< No asignable por copia.
-    /// @}
-
-    // =========================================================================
-    //                          ALTO NIVEL / �TODO EN UNO�
-    // =========================================================================
+    /**
+     * @brief Destructor por defecto.
+     */
+    ~SwapChain() = default;
 
     /**
-     * @brief Inicializa *Device + Immediate Context + Swap Chain + RTV + Viewport* y expone back-buffer.
+     * @brief Inicializa el Swap Chain.
      *
-     * @param device         Wrapper de `ID3D11Device` a poblar (quedar� adjunto al device creado).
-     * @param deviceContext  Wrapper de `ID3D11DeviceContext` (adjunta el inmediato creado).
-     * @param backBuffer     Recibe el `ID3D11Texture2D` del back-buffer (como `Texture`).
-     * @param window         Ventana destino (debe contener un `HWND` v�lido).
-     * @return `S_OK` en �xito; c�digo `HRESULT` en fallo.
-     *
-     * @pre `window` debe contener `m_hWnd` v�lido.
-     * @post Existe swap chain y RTV v�lidos; `backBuffer` contiene el recurso del back-buffer.
-     *
-     * @note El back-buffer **no** suele tener SRV; para sampling/post, usa un RT intermedio.
-     * @warning No mezclar MSAA en el back-buffer con DXGI 1.0 (usar RT MSAA intermedio + resolve).
+     * @param device Referencia al dispositivo de DirectX.
+     * @param deviceContext Contexto del dispositivo.
+     * @param backBuffer Textura asociada al back buffer.
+     * @param window Ventana donde se presentar� el contenido renderizado.
+     * @return HRESULT C�digo de resultado (S_OK si se inicializ� correctamente).
      */
-    HRESULT init(Device& device, DeviceContext& deviceContext, Texture& backBuffer, Window window);
-
-    // =========================================================================
-    //                                  LOW-LEVEL
-    // =========================================================================
+    HRESULT
+        init(Device& device,
+            DeviceContext& deviceContext,
+            Texture& backBuffer,
+            Window window);
+    // multi aliasing mejora la calidad de p�xeles
 
     /**
-     * @brief Crea la swap chain (sin crear device/context) y configura el RTV inicial.
+     * @brief Actualiza el estado del Swap Chain.
      *
-     * @param device       Dispositivo D3D11 con el que se crear� la cadena.
-     * @param hwnd         Handle de la ventana destino.
-     * @param width        Ancho de back-buffer (px).
-     * @param height       Alto de back-buffer (px).
-     * @param format       Formato del back-buffer (por defecto `DXGI_FORMAT_R8G8B8A8_UNORM`).
-     * @param bufferCount  N�mero de buffers (1 por defecto).
-     * @param windowed     `TRUE` para modo ventana; `FALSE` para fullscreen.
-     * @param sampleCount  Multisampling (ignorado para back-buffer; se fija a 1 en DXGI 1.0).
-     * @return `S_OK` en �xito; `HRESULT` en fallo.
-     *
-     * @pre `device != nullptr`, `hwnd != nullptr`, `width > 0`, `height > 0`.
-     * @post RTV recreado a partir del nuevo back-buffer.
-     * @warning El back-buffer se crea **sin MSAA**; si necesitas MSAA usa RT intermedio.
+     * Funci�n placeholder que puede usarse para l�gica de actualizaci�n
+     * relacionada con el swap chain.
      */
-    HRESULT create(ID3D11Device* device,
-        HWND hwnd,
-        UINT width,
-        UINT height,
-        DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM,
-        UINT bufferCount = 1,
-        BOOL windowed = TRUE,
-        UINT sampleCount = 1);
+    void
+        update();
 
     /**
-     * @brief Recrea el RTV del back-buffer actual (tras resize o invalidaci�n).
+     * @brief Renderiza utilizando el Swap Chain.
      *
-     * @param device Dispositivo con el que crear el RTV.
-     * @return `S_OK` en �xito; `HRESULT` en fallo.
-     * @pre `m_swap != nullptr`.
-     * @post `m_rtv` apunta al RTV del nuevo back-buffer.
+     * Esta funci�n puede contener l�gica de render previo a la presentaci�n
+     * de los buffers.
      */
-    HRESULT recreateRTV(ID3D11Device* device);
+    void
+        render();
 
     /**
-     * @brief Redimensiona el back-buffer y actualiza el RTV.
+     * @brief Libera los recursos asociados al Swap Chain.
+     */
+    void
+        destroy();
+
+    /**
+     * @brief Presenta el contenido del back buffer en la ventana.
      *
-     * @param device Dispositivo para crear el RTV.
-     * @param width  Nuevo ancho (px).
-     * @param height Nuevo alto (px).
-     * @return `S_OK` en �xito; `HRESULT` en fallo.
-     *
-     * @pre `m_swap != nullptr`, `width > 0`, `height > 0`.
-     * @post RTV recreado a partir del nuevo back-buffer; `width()/height()` actualizados.
+     * Intercambia los buffers (front y back) para mostrar en pantalla
+     * el fotograma renderizado m�s reciente.
      */
-    HRESULT resize(ID3D11Device* device, UINT width, UINT height);
+    void
+        present();
+
+
+
+public:
+    /**
+     * @brief Puntero al objeto IDXGISwapChain de DirectX 11.
+     */
+    IDXGISwapChain* m_swapChain = nullptr;
 
     /**
-     * @brief Presenta el back-buffer en pantalla.
-     *
-     * @param syncInterval 0 = sin VSync; 1 = VSync activado.
-     * @param flags        Flags DXGI (normalmente 0).
-     * @return `S_OK` en �xito; `HRESULT` en fallo.
-     *
-     * @pre `m_swap != nullptr`.
+     * @brief Tipo de driver utilizado (hardware, referencia, etc.).
      */
-    HRESULT present(UINT syncInterval = 1, UINT flags = 0);
-
-    /**
-     * @brief Enlaza el RTV interno (y DSV opcional) al pipeline (OMSetRenderTargets).
-     *
-     * @param ctx Contexto inmediato (raw pointer).
-     * @param dsv Depth-Stencil View opcional (puede ser `nullptr`).
-     * @pre `ctx != nullptr`, `m_rtv != nullptr`.
-     */
-    void bindAsRenderTarget(ID3D11DeviceContext* ctx, ID3D11DepthStencilView* dsv) const;
-
-    // =========================================================================
-    //                                  WRAPPERS
-    // =========================================================================
-
-    /**
-     * @brief Versi�n wrapper de @ref create usando `Device` y `Window`.
-     */
-    HRESULT create(Device& device,
-        Window& window,
-        UINT width,
-        UINT height,
-        DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM,
-        UINT bufferCount = 1,
-        BOOL windowed = TRUE,
-        UINT sampleCount = 1);
-
-    /**
-     * @brief Versi�n wrapper de @ref recreateRTV usando `Device`.
-     */
-    HRESULT recreateRTV(Device& device);
-
-    /**
-     * @brief Versi�n wrapper de @ref resize usando `Device`.
-     */
-    HRESULT resize(Device& device, UINT width, UINT height);
-
-    /**
-     * @brief Versi�n wrapper de @ref bindAsRenderTarget usando `DeviceContext`.
-     */
-    void bindAsRenderTarget(DeviceContext& ctx, ID3D11DepthStencilView* dsv) const;
-
-    // =========================================================================
-    //                                 GESTI�N
-    // =========================================================================
-
-    /**
-     * @brief Libera RTV y swap chain y deja el objeto en estado vac�o.
-     *
-     * @post `get() == nullptr`, `rtv() == nullptr`, `width() == height() == 0`.
-     */
-    void destroy();
-
-    // ---------------------- Getters ----------------------
-
-    /// @return Puntero crudo a la swap chain (puede ser `nullptr`).
-    IDXGISwapChain* get()  const { return m_swap; }
-
-    /// @return Puntero crudo al RTV actual (puede ser `nullptr`).
-    ID3D11RenderTargetView* rtv()  const { return m_rtv; }
-
-    /// @return Ancho actual (px) del back-buffer.
-    UINT        width()  const { return m_width; }
-
-    /// @return Alto actual (px) del back-buffer.
-    UINT        height() const { return m_height; }
-
-    /// @return Formato actual del back-buffer.
-    DXGI_FORMAT format() const { return m_format; }
+    D3D_DRIVER_TYPE m_driverType = D3D_DRIVER_TYPE_NULL;
 
 private:
     /**
-     * @brief Libera el RTV interno (si existe).
-     * @post `m_rtv == nullptr`.
+     * @brief Nivel de caracter�sticas de DirectX soportado.
      */
-    void destroyRTV_();
+    D3D_FEATURE_LEVEL m_featureLevel = D3D_FEATURE_LEVEL_11_0;
 
-private:
-    IDXGISwapChain* m_swap = nullptr; ///< Swap chain de DXGI (propietaria).
-    ID3D11RenderTargetView* m_rtv = nullptr; ///< RTV del back-buffer actual (propietaria).
-    UINT                    m_width = 0;       ///< Ancho del back-buffer (px).
-    UINT                    m_height = 0;       ///< Alto del back-buffer (px).
-    DXGI_FORMAT             m_format = DXGI_FORMAT_R8G8B8A8_UNORM; ///< Formato del back-buffer.
+    /**
+     * @brief N�mero de muestras de multisampling utilizadas.
+     */
+    unsigned int m_sampleCount;
+
+    /**
+     * @brief N�mero de niveles de calidad soportados para multisampling.
+     */
+    unsigned int m_qualityLevels;
+
+    /**
+     * @brief Puntero al objeto IDXGIDevice de DirectX.
+     */
+    IDXGIDevice* m_dxgiDevice = nullptr;
+
+    /**
+     * @brief Puntero al objeto IDXGIAdapter de DirectX.
+     */
+    IDXGIAdapter* m_dxgiAdapter = nullptr;
+
+    /**
+     * @brief Puntero al objeto IDXGIFactory de DirectX.
+     */
+    IDXGIFactory* m_dxgiFactory = nullptr;
 };

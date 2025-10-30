@@ -1,123 +1,119 @@
 ﻿#pragma once
-/**
- * @file Prerequisites.h
- * @brief Cabecera centralizada de dependencias y utilidades (Win32 + Direct3D 11 + DirectXMath).
- *
- * @details
- * - Re�ne includes est�ndar (STL), Win32 y Direct3D 11, m�s DirectXMath.
- * - Define macros utilitarias para liberar COM y para logging en la salida de depuraci�n.
- * - Pensado para usarse como �precompiled header� del proyecto o como cabecera com�n.
- *
- * @note Los macros de logging aqu� definidos formatean mensajes a `OutputDebugStringW`.
- *       Aseg�rate de tener una ventana de *Output* visible (Debug) para verlos.
- */
+//Librerias STD
+#include <string>
+#include <sstream>
+#include <vector>
+#include <windows.h>
+#include <xnamath.h>
+#include <thread>
 
- // ==============================
- // Dependencias est�ndar (STL)
- // ==============================
+
+//Librerias DirectX
+#include <d3d11.h>
+#include <d3dx11.h>
+#include <d3dcompiler.h>
+#include "Resource.h"
+#include "resource.h"
+
+
+//third Party Libraries
+
+// MACROS
+
+/**
+ * @brief Libera de manera segura un recurso de DirectX.
+ *
+ * Si el puntero no es nulo, libera la memoria con Release()
+ * y lo asigna a nullptr para evitar accesos inv�lidos.
+ *
+ * @param x Puntero al recurso que se va a liberar.
+ */
+#define SAFE_RELEASE(x) if(x != nullptr) x->Release(); x = nullptr;
 
  /**
-  * @defgroup PrereqSTD STL / C++ Standard Library
-  * @brief Incluye tipos y utilidades generales.
-  * @{
+  * @brief Macro para mostrar mensajes de creaci�n de recursos en la ventana de depuraci�n.
+  *
+  * Formatea un mensaje con la clase, el m�todo y el estado actual de la creaci�n.
+  *
+  * @param classObj Nombre de la clase donde ocurre el evento.
+  * @param method Nombre del m�todo donde ocurre el evento.
+  * @param state Estado del recurso (ejemplo: "OK", "FAILED").
   */
-#include <string>      ///< @brief `std::string`, `std::wstring` y utilidades de cadena.
-#include <sstream>     ///< @brief `std::ostringstream` / `std::wostringstream` para formateo.
-#include <vector>      ///< @brief Contenedor din�mico `std::vector`.
-#include <thread>      ///< @brief `std::thread` y utilidades de concurrencia.
-  /// @}
-
-  // ==============================
-  // Win32 + Direct3D 11 (SDK)
-  // ==============================
+#define MESSAGE( classObj, method, state )   \
+{                                            \
+   std::wostringstream os_;                  \
+   os_ << classObj << "::" << method << " : " << "[CREATION OF RESOURCE " << ": " << state << "] \n"; \
+   OutputDebugStringW( os_.str().c_str() );  \
+}
 
   /**
-   * @defgroup PrereqWin32 Win32 + Direct3D 11
-   * @brief Cabeceras base del API de Windows y Direct3D 11.
-   * @{
+   * @brief Macro para registrar mensajes de error en la ventana de depuraci�n.
+   *
+   * Captura informaci�n detallada de la clase, m�todo y descripci�n del error.
+   * Si ocurre un fallo durante el registro, captura la excepci�n y notifica.
+   *
+   * @param classObj Nombre de la clase donde ocurre el error.
+   * @param method Nombre del m�todo donde ocurre el error.
+   * @param errorMSG Mensaje descriptivo del error.
    */
-#include <windows.h>    ///< @brief Tipos/funciones Win32 (HWND, HINSTANCE, mensajes, etc.).
-#include <d3d11.h>      ///< @brief Interfaces D3D11 (ID3D11Device, ID3D11DeviceContext, etc.).
-#include <dxgi.h>       ///< @brief DXGI (swap chain, formatos, adaptadores).
-#include <d3dcompiler.h>///< @brief Compilador HLSL (D3DCompile, blobs).
-   /// @}
-
-   // ==============================
-   // DirectXMath (moderna)
-   // ==============================
+#define ERROR(classObj, method, errorMSG)                     \
+{                                                             \
+    try {                                                     \
+        std::wostringstream os_;                              \
+        os_ << L"ERROR : " << classObj << L"::" << method     \
+            << L" : " << errorMSG << L"\n";                   \
+        OutputDebugStringW(os_.str().c_str());                \
+    } catch (...) {                                           \
+        OutputDebugStringW(L"Failed to log error message.\n");\
+    }                                                         \
+}
 
    /**
-    * @defgroup PrereqDXM DirectXMath
-    * @brief Tipos y funciones SIMD (XMFLOAT*, XMMATRIX, XMVector*).
-    * @details Usa espacios de nombres y funciones inline; no requiere d3dx.
-    * @{
+    * @brief Representa un v�rtice simple con posici�n y coordenadas de textura.
     */
-#include <DirectXMath.h> ///< @see https://learn.microsoft.com/windows/win32/dxmath/pg-xnamath-migration
-    /// @}
+struct
+    SimpleVertex {
+    XMFLOAT3 Pos;  /**< Coordenadas de posici�n del v�rtice (x, y, z). */
+    XMFLOAT2 Tex;  /**< Coordenadas de textura (u, v). */
+};
 
-    /**
-     * @defgroup PrereqMacros Macros utilitarios
-     * @brief Macros para liberaci�n segura y logging a la salida de depuraci�n.
-     * @{
-     */
+/**
+ * @brief Constantes que nunca cambian: contiene la matriz de vista.
+ */
+struct
+    CBNeverChanges {
+    XMMATRIX mView; /**< Matriz de vista usada en la c�mara. */
+};
 
-     /**
-      * @brief Libera de forma segura un puntero COM y lo pone a `nullptr`.
-      *
-      * @param x Puntero COM (por ejemplo, `ID3D11Buffer*`, `ID3D11Device*`, etc.).
-      *
-      * @warning El par�metro debe ser una **lvalue** (una variable asignable). No pases temporales.
-      * @code
-      * ID3D11Buffer* vb = nullptr;
-      * // ... vb creado ...
-      * SAFE_RELEASE(vb); // vb->Release() y luego vb = nullptr
-      * @endcode
-      */
-#define SAFE_RELEASE(x) if((x) != nullptr) { (x)->Release(); (x) = nullptr; }
+/**
+ * @brief Constantes que cambian al redimensionar la ventana.
+ */
+struct
+    CBChangeOnResize {
+    XMMATRIX mProjection; /**< Matriz de proyecci�n ajustada al tama�o de la ventana. */
+};
 
-      /**
-       * @brief Escribe un mensaje informativo en la salida de depuraci�n (Unicode).
-       *
-       * @param classObj Nombre del �m�dulo/clase� (macro tokenizado).
-       * @param method   Nombre del m�todo/funci�n (macro tokenizado).
-       * @param state    Texto corto del estado (macro tokenizado).
-       *
-       * @details Este macro **stringiza** los par�metros `classObj`, `method` y `state`
-       * (mediante `#`) y arma un mensaje con el formato:
-       * `Class::Method : [ State ]\n`
-       *
-       * @note Debido al stringizing, si pasas literales con `L"..."`, en el output
-       * ver�s los caracteres de literal (p.ej. `L"MiClase"`). Es normal con esta versi�n.
-       * Si prefieres pasar wstring directamente sin `#`, podemos darte una variante.
-       *
-       * @code
-       * // Ejemplo
-       * MESSAGE(Device, Init, OK);
-       * // Output: "Device::Init : [ OK ]"
-       * @endcode
-       */
-#define MESSAGE(classObj, method, state) \
-{ std::wostringstream os_; os_ << L#classObj L"::" L#method L" : " << L"[ " << L#state << L" ]\n"; \
-  OutputDebugStringW(os_.str().c_str()); }
+/**
+ * @brief Constantes que cambian en cada frame.
+ */
+struct
+    CBChangesEveryFrame {
+    XMMATRIX mWorld;      /**< Matriz de mundo para transformar los objetos. */
+    XMFLOAT4 vMeshColor;  /**< Color aplicado a la malla. */
+};
 
-       /**
-        * @brief Escribe un mensaje de error en la salida de depuraci�n (Unicode).
-        *
-        * @param classObj Nombre del �m�dulo/clase� (macro tokenizado).
-        * @param method   Nombre del m�todo/funci�n (macro tokenizado).
-        * @param errorMSG Mensaje de error detallado (expresi�n wide-string, p.ej. `L"...")`.
-        *
-        * @details Formato de salida:
-        * `ERROR : Class::Method : <mensaje>\n`
-        *
-        * @code
-        * // Ejemplo
-        * ERROR(Device, CreateBuffer, L"CreateBuffer() fall� con E_FAIL");
-        * @endcode
-        */
-#define ERROR(classObj, method, errorMSG) \
-{ try { std::wostringstream os_; os_ << L"ERROR : " << L#classObj << L"::" L#method \
-  << L" : " << errorMSG << L"\n"; OutputDebugStringW(os_.str().c_str()); } \
-  catch (...) { OutputDebugStringW(L"Failed to log error message.\n"); } }
+/**
+ * @brief Tipos de extensi�n soportados para las texturas.
+ */
+enum
+    ExtensionType {
+    DDS = 0, /**< Textura en formato DDS (DirectDraw Surface). */
+    PNG = 1, /**< Textura en formato PNG (Portable Network Graphics). */
+    JPG = 2  /**< Textura en formato JPG (Joint Photographic Experts Group). */
+};
 
-        /// @} // end of group PrereqMacros
+enum
+    ShaderType {
+    VERTEX_SHADER = 0,
+    PIXEL_SHADER = 1
+};

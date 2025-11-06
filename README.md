@@ -43,19 +43,21 @@ Diseño orientado a la enseñanza y la comprensión del flujo GPU-CPU en DirectX
 El motor se organiza bajo una arquitectura orientada a objetos, donde cada clase abstrae un componente esencial del pipeline gráfico.
 
 Descripción de Clases
-| Clase                | Descripción                                                                                               |
-| -------------------- | --------------------------------------------------------------------------------------------------------- |
-| **BaseApp**          | Núcleo principal del motor. Gestiona el ciclo de vida, bucle de renderizado y actualización de la escena. |
-| **Window**           | Encapsula la creación de ventana y manejo de eventos Win32.                                               |
-| **Device**           | Fabrica recursos de GPU (buffers, shaders, texturas).                                                     |
-| **DeviceContext**    | Envía comandos de dibujo y estados al pipeline.                                                           |
-| **SwapChain**        | Controla el intercambio de buffers (presentación de imagen).                                              |
-| **RenderTargetView** | Superficie de renderizado principal (color).                                                              |
-| **DepthStencilView** | Superficie de profundidad y stencil.                                                                      |
-| **Buffer**           | Representa vertex, index o constant buffers.                                                              |
-| **ShaderProgram**    | Administra Vertex/Pixel Shaders y su compilación HLSL.                                                    |
-| **CShape**           | Componente renderizable de forma 2D/3D en el sistema ECS.                                                 |
-| **Actor**            | Entidad base con comportamiento y representación.                                                         |
+| **Clase**            | **Descripción**                                                                                                                                               |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **BaseApp**          | Núcleo del motor que coordina la inicialización, actualización y renderizado. Controla el ciclo principal de la aplicación y gestiona los módulos esenciales. |
+| **Window**           | Encapsula la creación y administración de la ventana Win32, gestionando eventos del sistema y el contexto de presentación.                                    |
+| **Device**           | Interfaz principal con la GPU. Se encarga de crear y manejar los recursos gráficos como texturas, shaders y buffers.                                          |
+| **DeviceContext**    | Ejecuta los comandos enviados a la GPU, asigna los recursos activos al pipeline y controla las operaciones de dibujo.                                         |
+| **SwapChain**        | Administra los buffers de presentación, alternando entre el back buffer y el front buffer para mostrar los fotogramas.                                        |
+| **Texture**          | Representa imágenes 2D utilizadas como texturas en los shaders, junto con sus vistas asociadas para lectura o escritura.                                      |
+| **RenderTargetView** | Superficie donde se renderiza la imagen final antes de ser mostrada en pantalla. Usualmente se asocia al back buffer.                                         |
+| **DepthStencilView** | Búfer que almacena la información de profundidad y stencil, garantizando un renderizado 3D correcto y ordenado.                                               |
+| **Buffer**           | Contenedor genérico de datos en GPU. Puede representar vértices, índices o constantes utilizados durante el renderizado.                                      |
+| **ShaderProgram**    | Módulo encargado de compilar, vincular y administrar los Vertex y Pixel Shaders escritos en HLSL.                                                             |
+| **InputLayout**      | Define la estructura del vértice y cómo los datos del buffer serán interpretados por el Vertex Shader.                                                        |
+| **ModelLoader**      | Herramienta encargada de leer y procesar archivos de modelo para generar buffers de geometría listos para renderizar.                                         |
+| **MeshComponent**    | Componente visual que agrupa buffers, materiales y texturas para representar una malla dentro del motor.                                                      |
 
 🎨 Pipeline de Renderizado
 

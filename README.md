@@ -43,18 +43,20 @@ Diseño orientado a la enseñanza y la comprensión del flujo GPU-CPU en DirectX
 El motor se organiza bajo una arquitectura orientada a objetos, donde cada clase abstrae un componente esencial del pipeline gráfico.
 
 Descripción de Clases
-Clase	Descripción
-BaseApp	Núcleo principal del motor. Gestiona el ciclo de vida, bucle de renderizado y actualización de la escena.
-Window	Encapsula la creación de ventana y manejo de eventos Win32.
-Device	Fabrica recursos de GPU (buffers, shaders, texturas).
-DeviceContext	Envía comandos de dibujo y estados al pipeline.
-SwapChain	Controla el intercambio de buffers (presentación de imagen).
-RenderTargetView	Superficie de renderizado principal (color).
-DepthStencilView	Superficie de profundidad y stencil.
-Buffer	Representa vertex, index o constant buffers.
-ShaderProgram	Administra Vertex/Pixel Shaders y su compilación HLSL.
-CShape	Componente renderizable de forma 2D/3D en el sistema ECS.
-Actor	Entidad base con comportamiento y representación.
+| Clase                | Descripción                                                                                               |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| **BaseApp**          | Núcleo principal del motor. Gestiona el ciclo de vida, bucle de renderizado y actualización de la escena. |
+| **Window**           | Encapsula la creación de ventana y manejo de eventos Win32.                                               |
+| **Device**           | Fabrica recursos de GPU (buffers, shaders, texturas).                                                     |
+| **DeviceContext**    | Envía comandos de dibujo y estados al pipeline.                                                           |
+| **SwapChain**        | Controla el intercambio de buffers (presentación de imagen).                                              |
+| **RenderTargetView** | Superficie de renderizado principal (color).                                                              |
+| **DepthStencilView** | Superficie de profundidad y stencil.                                                                      |
+| **Buffer**           | Representa vertex, index o constant buffers.                                                              |
+| **ShaderProgram**    | Administra Vertex/Pixel Shaders y su compilación HLSL.                                                    |
+| **CShape**           | Componente renderizable de forma 2D/3D en el sistema ECS.                                                 |
+| **Actor**            | Entidad base con comportamiento y representación.                                                         |
+
 📊 Diagramas de Arquitectura
 1️⃣ Diagrama de Flujo de Ejecución
 graph TD
@@ -72,6 +74,7 @@ graph TD
     L --> M(SwapChain->Present)
     M --> I
     I --> |WM_QUIT| N(BaseApp::destroy)
+
 
 2️⃣ Diagrama de Clases
 classDiagram

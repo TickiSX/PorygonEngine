@@ -75,6 +75,16 @@ struct
     SimpleVertex {
     XMFLOAT3 Pos;  /**< Coordenadas de posici�n del v�rtice (x, y, z). */
     XMFLOAT2 Tex;  /**< Coordenadas de textura (u, v). */
+    XMFLOAT3 Normal; /**< Vector normal del v�rtice (para iluminaci�n). */
+};
+
+struct
+    LoadData {
+    std::string name;
+    std::vector <SimpleVertex> vertex;
+    std::vector <unsigned int> index;
+    int numVertex;
+    int numIndex;
 };
 
 /**

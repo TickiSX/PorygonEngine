@@ -62,6 +62,9 @@
     <ClCompile Include="source\Viewport.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="source\ModelLoader.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">
@@ -116,6 +119,12 @@
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="include\Viewport.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ModelLoader.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OBJ_Loader.h">
       <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>

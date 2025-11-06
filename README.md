@@ -42,6 +42,7 @@ Diseño orientado a la enseñanza y la comprensión del flujo GPU-CPU en DirectX
 
 El motor se organiza bajo una arquitectura orientada a objetos, donde cada clase abstrae un componente esencial del pipeline gráfico.
 
+Descripción de Clases
 Clase	Descripción
 BaseApp	Núcleo principal del motor. Gestiona el ciclo de vida, bucle de renderizado y actualización de la escena.
 Window	Encapsula la creación de ventana y manejo de eventos Win32.
@@ -61,7 +62,7 @@ graph TD
     B --> C(Crear Window)
     C --> D(Crear Device y Context)
     D --> E(Crear SwapChain)
-    E --> F(Crear RenderTargetView/DepthStencilView)
+    E --> F(Crear RenderTargetView / DepthStencilView)
     F --> G(Cargar Shaders y Buffers)
     G --> H(BaseApp::run)
     H --> I{Bucle Principal}
@@ -70,39 +71,41 @@ graph TD
     K --> L(DeviceContext->DrawIndexed)
     L --> M(SwapChain->Present)
     M --> I
-    I -->|WM_QUIT| N(BaseApp::destroy)
+    I --> |WM_QUIT| N(BaseApp::destroy)
 
 2️⃣ Diagrama de Clases
 classDiagram
-    direction LR
-    class BaseApp {
-        +init()
-        +run()
-        +update()
-        +render()
-        +destroy()
-    }
-    class Window { +HWND hwnd }
-    class Device { +ID3D11Device* device }
-    class DeviceContext { +ID3D11DeviceContext* context }
-    class SwapChain { +IDXGISwapChain* swap }
-    class RenderTargetView { +ID3D11RenderTargetView* rtv }
-    class DepthStencilView { +ID3D11DepthStencilView* dsv }
-    class ShaderProgram { +Compile() +Bind() }
-    class Buffer { +Create() +Bind() }
-    class CShape { +Draw() }
-    class Actor { +Update() }
+direction LR
 
-    BaseApp o-- Window
-    BaseApp o-- Device
-    BaseApp o-- DeviceContext
-    BaseApp o-- SwapChain
-    BaseApp o-- RenderTargetView
-    BaseApp o-- DepthStencilView
-    BaseApp ..> ShaderProgram
-    BaseApp ..> Buffer
-    BaseApp ..> CShape
-    BaseApp ..> Actor
+class BaseApp {
+  +init()
+  +run()
+  +update()
+  +render()
+  +destroy()
+}
+
+class Window { +HWND hwnd }
+class Device { +ID3D11Device* device }
+class DeviceContext { +ID3D11DeviceContext* context }
+class SwapChain { +IDXGISwapChain* swap }
+class RenderTargetView { +ID3D11RenderTargetView* rtv }
+class DepthStencilView { +ID3D11DepthStencilView* dsv }
+class ShaderProgram { +Compile() +Bind() }
+class Buffer { +Create() +Bind() }
+class CShape { +Draw() }
+class Actor { +Update() }
+
+BaseApp o-- Window
+BaseApp o-- Device
+BaseApp o-- DeviceContext
+BaseApp o-- SwapChain
+BaseApp o-- RenderTargetView
+BaseApp o-- DepthStencilView
+BaseApp ..> ShaderProgram
+BaseApp ..> Buffer
+BaseApp ..> CShape
+BaseApp ..> Actor
 
 🎨 Pipeline de Renderizado
 
@@ -158,5 +161,4 @@ Ejecutar el proyecto principal (Tutorial07.cpp o BaseApp demo).
 🧠 Licencia
 
 Este proyecto se distribuye bajo la Licencia MIT.
-Consulta el archivo LICENSE
- para más detalles.
+Consulta el archivo LICENSE para más detalles.

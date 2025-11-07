@@ -3,6 +3,8 @@
 Porygon Engine es un motor de renderizado y experimentación 3D escrito en C++, construido sobre DirectX 11.
 Creado con fines educativos y de exploración de bajo nivel, implementa un pipeline gráfico en tiempo real, abstrayendo las partes fundamentales del renderizado moderno: dispositivos, contextos, shaders, texturas y buffers.
 
+(algunas códigos hecho con ayuda de sebas y yo ayude a cesar)
+
 🚀 Características Principales
 
 Abstracción de DirectX 11:

@@ -21,6 +21,9 @@
     <Filter Include="Include\Patterns">
       <UniqueIdentifier>{68772c43-a244-44ca-aba2-19e657b02443}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Utilities">
+      <UniqueIdentifier>{6520f97e-2089-407c-b5f7-dc4f02cb8042}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PorygonEngine.cpp">
@@ -65,8 +68,11 @@
     <ClCompile Include="source\Viewport.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="source\ModelLoader.cpp">
+    <ClCompile Include="source\Model3D.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="include\ResourceManager.h">
+      <Filter>Include\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -124,7 +130,7 @@
     <ClInclude Include="include\Viewport.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="include\ModelLoader.h">
+    <ClInclude Include="include\Model3D.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="include\stb_image.h">

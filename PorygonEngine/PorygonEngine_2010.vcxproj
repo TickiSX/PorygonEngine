@@ -143,7 +143,8 @@
     <LibraryPath>$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin/$(PlatformShortName)/</OutDir>
     <IntDir>$(SolutionDir)intermediate/$(ProjectName)/$(PlatformShortName)/$(Configuration)/</IntDir>
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>
+    </TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|X64'">
     <LinkIncremental>false</LinkIncremental>
@@ -153,7 +154,8 @@
     <LibraryPath>$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin/$(PlatformShortName)/</OutDir>
     <IntDir>$(SolutionDir)intermediate/$(ProjectName)/$(PlatformShortName)/$(Configuration)/</IntDir>
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>
+    </TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -176,7 +178,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib;zlib.libd3dx11d.lib;d3dx9d.lib;dxerr.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib;d3dx11d.lib;d3dx9d.lib;dxerr.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LargeAddressAware>true</LargeAddressAware>
@@ -219,7 +221,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib;zlib.libd3dx11d.lib;d3dx9d.lib;dxerr.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib;d3dx11d.lib;d3dx9d.lib;dxerr.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LargeAddressAware>true</LargeAddressAware>
@@ -263,7 +265,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib;zlib.libd3dx11.lib;d3dx9.lib;dxerr.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -308,7 +310,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib;zlib.libd3dx11.lib;d3dx9.lib;dxerr.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -354,7 +356,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib;zlib.libd3dx11.lib;d3dx9.lib;dxerr.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -399,7 +401,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib;zlib.libd3dx11.lib;d3dx9.lib;dxerr.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;libfbxsdk.lib;libxml2.lib;zlib.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -426,6 +428,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="include\ResourceManager.h" />
     <ClCompile Include="PorygonEngine.cpp" />
     <ClCompile Include="source\BaseApp.cpp" />
     <ClCompile Include="source\Buffer.cpp" />
@@ -433,7 +436,7 @@
     <ClCompile Include="source\Device.cpp" />
     <ClCompile Include="source\DeviceContext.cpp" />
     <ClCompile Include="source\InputLayout.cpp" />
-    <ClCompile Include="source\ModelLoader.cpp" />
+    <ClCompile Include="source\Model3D.cpp" />
     <ClCompile Include="source\RenderTargetView.cpp" />
     <ClCompile Include="source\SamplerState.cpp" />
     <ClCompile Include="source\ShaderProgram.cpp" />
@@ -451,7 +454,7 @@
     <ClInclude Include="include\InputLayout.h" />
     <ClInclude Include="include\IResource.h" />
     <ClInclude Include="include\MeshComponent.h" />
-    <ClInclude Include="include\ModelLoader.h" />
+    <ClInclude Include="include\Model3D.h" />
     <ClInclude Include="Include\Prerequisites.h" />
     <ClInclude Include="include\RenderTargetView.h" />
     <ClInclude Include="include\Resource.h" />

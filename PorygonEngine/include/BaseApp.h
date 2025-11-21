@@ -10,83 +10,66 @@
 #include "Viewport.h"
 #include "ShaderProgram.h"
 #include "MeshComponent.h"
-#include "ModelLoader.h"
 #include "Buffer.h"
 #include "SamplerState.h"
-#include "ModelLoader.h"
+#include "Model3D.h"
 
-// Si usas funciones antiguas de D3DX para cargar texturas (opcional)
-#include <d3d11.h>
-#ifdef _HAS_D3DX11    // define esto en tu proyecto si de verdad usas D3DX
-#include <d3dx11.h>
-#endif
 
-/**
- * @file BaseApp.h
- * @brief Orquesta la ventana, inicializa D3D11 y ejecuta el game loop.
- */
-class BaseApp {
+class
+	BaseApp {
 public:
-    BaseApp(HINSTANCE hInst, int nCmdShow);
-    ~BaseApp() { destroy(); }
+	BaseApp() = default;
+	~BaseApp() { destroy(); }
 
-    int     run(HINSTANCE hInst, int nCmdShow);
-    HRESULT init();
-    void    update(float deltaTime);
-    void    render();
-    void    destroy();
+	int
+		run(HINSTANCE hInst, int nCmdShow);
+
+	HRESULT
+		init();
+
+	void
+		update(float deltaTime);
+
+	void
+		render();
+
+	void
+		destroy();
 
 private:
-    // WndProc est�tico (guardamos this en GWLP_USERDATA)
-    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK
+		WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-    // --- Plataforma / Dispositivo ---
-    Window        m_window;
-    Device        m_device;
-    DeviceContext m_deviceContext;
-    SwapChain     m_swapChain;
+private:
+	Window                              m_window;
+	Device															m_device;
+	DeviceContext												m_deviceContext;
+	SwapChain                           m_swapChain;
+	Texture                             m_backBuffer;
+	RenderTargetView									  m_renderTargetView;
+	Texture                             m_depthStencil;
+	DepthStencilView									  m_depthStencilView;
+	Viewport                            m_viewport;
+	ShaderProgram												m_shaderProgram;
+	//MeshComponent												m_mesh;
+	Buffer															m_vertexBuffer;
+	Buffer															m_indexBuffer;
+	Buffer															m_cbNeverChanges;
+	Buffer															m_cbChangeOnResize;
+	Buffer															m_cbChangesEveryFrame;
+	Texture 														m_textureCube;
+	SamplerState												m_samplerState;
 
-    // --- Render targets / profundidad ---
-    Texture          m_backBuffer;
-    RenderTargetView m_renderTargetView;
-    Texture          m_depthStencil;
-    DepthStencilView m_depthStencilView;
-    Viewport         m_viewport;
+	XMMATRIX                            m_World;
+	XMMATRIX                            m_View;
+	XMMATRIX                            m_Projection;
+	XMFLOAT4                            m_vMeshColor;// (0.7f, 0.7f, 0.7f, 1.0f);
 
-    // --- Pipeline programable ---
-    ShaderProgram m_shaderProgram;
+	std::vector<MeshComponent> TRex;
+	Model3D* m_model;
 
-    // --- Geometr�a y buffers ---
-    MeshComponent m_mesh;
-    Buffer        m_vertexBuffer;
-    Buffer        m_indexBuffer;
-    Buffer        m_cbNeverChanges;       // b0 (view)
-    Buffer        m_cbChangeOnResize;     // b1 (projection)
-    Buffer        m_cbChangesEveryFrame;  // b2 (world/color)
-    Texture       m_textureCube;          // Wrapper de textura (opcional)
-    SamplerState  m_samplerState;
 
-    // --- Transformaciones / c�mara ---
-    XMMATRIX m_World;
-    XMMATRIX m_View;
-    XMMATRIX m_Projection;
-    XMFLOAT4 m_vMeshColor{ 1, 1, 1, 1 };
-
-    // Textura directa (cuando cargas con D3DX/stb)
-    ID3D11ShaderResourceView* m_pModelTextureSRV = nullptr;
-
-    // --- C�mara y animaci�n ---
-    float m_cameraDistance = 6.0f;   // zoom base (rueda del mouse)
-    float m_spinAngle = 0.0f;   // rotaci�n del modelo (radianes)
-    float m_orbitAngle = 0.0f;   // �rbita de c�mara (radianes)
-    float m_spinSpeedDeg = 20.0f;  // vel. giro del modelo (grados/seg)
-    float m_orbitSpeedDeg = 10.0f;  // vel. �rbita de c�mara (grados/seg)
-
-    // Entrada
-    void onMouseWheel(int zDelta);
-
-    // --- Payloads CPU para Constant Buffers ---
-    CBChangeOnResize    cbChangesOnResize;
-    CBNeverChanges      cbNeverChanges;
-    CBChangesEveryFrame cb;
+	CBChangeOnResize										cbChangesOnResize;
+	CBNeverChanges											cbNeverChanges;
+	CBChangesEveryFrame									cb;
 };

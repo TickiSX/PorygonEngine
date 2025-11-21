@@ -18,6 +18,9 @@
     <Filter Include="Source">
       <UniqueIdentifier>{1409e15f-c6ad-4406-97cc-24241f5c7387}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Patterns">
+      <UniqueIdentifier>{68772c43-a244-44ca-aba2-19e657b02443}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PorygonEngine.cpp">
@@ -126,6 +129,9 @@
     </ClInclude>
     <ClInclude Include="include\stb_image.h">
       <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\IResource.h">
+      <Filter>Include\Patterns</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -10,111 +10,83 @@
 #include "Viewport.h"
 #include "ShaderProgram.h"
 #include "MeshComponent.h"
+#include "ModelLoader.h"
 #include "Buffer.h"
 #include "SamplerState.h"
-
 #include "ModelLoader.h"
 
+// Si usas funciones antiguas de D3DX para cargar texturas (opcional)
+#include <d3d11.h>
+#ifdef _HAS_D3DX11    // define esto en tu proyecto si de verdad usas D3DX
+#include <d3dx11.h>
+#endif
+
 /**
- * @class BaseApp
- * @brief Clase principal de la aplicaci�n base del motor gr�fico.
- *        Se encarga de inicializar, actualizar, renderizar y destruir
- *        todos los componentes necesarios para ejecutar una aplicaci�n DirectX.
+ * @file BaseApp.h
+ * @brief Orquesta la ventana, inicializa D3D11 y ejecuta el game loop.
  */
-class
-	BaseApp {
+class BaseApp {
 public:
+    BaseApp(HINSTANCE hInst, int nCmdShow);
+    ~BaseApp() { destroy(); }
 
-	/**
-	 * @brief Constructor de BaseApp.
-	 * @param hInst Instancia de la aplicaci�n.
-	 * @param nCmdShow Par�metro que indica c�mo debe mostrarse la ventana.
-	 */
-	BaseApp(HINSTANCE hInst, int nCmdShow);
-
-	/**
-	 * @brief Destructor de BaseApp.
-	 *        Llama autom�ticamente al m�todo destroy().
-	 */
-	~BaseApp() { destroy(); }
-
-	/**
-	 * @brief Ejecuta el ciclo principal de la aplicaci�n.
-	 * @param hInst Instancia de la aplicaci�n.
-	 * @param nCmdShow Modo de visualizaci�n de la ventana.
-	 * @return C�digo de salida de la aplicaci�n.
-	 */
-	int
-		run(HINSTANCE hInst, int nCmdShow);
-
-	/**
-	 * @brief Inicializa todos los componentes principales del motor gr�fico.
-	 * @return HRESULT que indica el resultado de la inicializaci�n.
-	 */
-	HRESULT
-		init();
-
-	/**
-	 * @brief Actualiza el estado l�gico de la aplicaci�n.
-	 * @param deltaTime Tiempo transcurrido desde el �ltimo frame (en segundos).
-	 */
-	void
-		update(float deltaTime);
-
-	/**
-	 * @brief Renderiza la escena en pantalla.
-	 */
-	void
-		render();
-
-	/**
-	 * @brief Libera todos los recursos y objetos utilizados por la aplicaci�n.
-	 */
-	void
-		destroy();
+    int     run(HINSTANCE hInst, int nCmdShow);
+    HRESULT init();
+    void    update(float deltaTime);
+    void    render();
+    void    destroy();
 
 private:
+    // WndProc est�tico (guardamos this en GWLP_USERDATA)
+    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-	/**
-	 * @brief Funci�n de ventana (Window Procedure) que maneja los mensajes del sistema.
-	 * @param hWnd Handle de la ventana.
-	 * @param message Mensaje recibido.
-	 * @param wParam Par�metro adicional del mensaje.
-	 * @param lParam Par�metro adicional del mensaje.
-	 * @return LRESULT con el resultado del procesamiento del mensaje.
-	 */
-	static LRESULT CALLBACK
-		WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    // --- Plataforma / Dispositivo ---
+    Window        m_window;
+    Device        m_device;
+    DeviceContext m_deviceContext;
+    SwapChain     m_swapChain;
 
+    // --- Render targets / profundidad ---
+    Texture          m_backBuffer;
+    RenderTargetView m_renderTargetView;
+    Texture          m_depthStencil;
+    DepthStencilView m_depthStencilView;
+    Viewport         m_viewport;
 
-	Window                              m_window;
-	Device                              m_device;
-	DeviceContext                       m_deviceContext;
-	SwapChain                           m_swapChain;
-	Texture                             m_backBuffer;
-	RenderTargetView                    m_renderTargetView;
-	Texture                             m_depthStencil;
-	DepthStencilView                    m_depthStencilView;
-	Viewport                            m_viewport;
-	ShaderProgram                       m_shaderProgram;
-	MeshComponent												m_mesh;
-	Buffer															m_vertexBuffer;
-	Buffer															m_indexBuffer;
-	Buffer															m_cbNeverChanges;
-	Buffer															m_cbChangeOnResize;
-	Buffer															m_cbChangesEveryFrame;
-	Texture 														m_textureCube;
-	SamplerState                        m_samplerState;
+    // --- Pipeline programable ---
+    ShaderProgram m_shaderProgram;
 
-	ModelLoader                         m_modelLoader;
-	LoadData                            LD;
+    // --- Geometr�a y buffers ---
+    MeshComponent m_mesh;
+    Buffer        m_vertexBuffer;
+    Buffer        m_indexBuffer;
+    Buffer        m_cbNeverChanges;       // b0 (view)
+    Buffer        m_cbChangeOnResize;     // b1 (projection)
+    Buffer        m_cbChangesEveryFrame;  // b2 (world/color)
+    Texture       m_textureCube;          // Wrapper de textura (opcional)
+    SamplerState  m_samplerState;
 
-	XMMATRIX                            m_World;
-	XMMATRIX                            m_View;
-	XMMATRIX                            m_Projection;
-	XMFLOAT4                            m_vMeshColor; // (0.7f, 0.7f, 0.7f, 1.0f);
+    // --- Transformaciones / c�mara ---
+    XMMATRIX m_World;
+    XMMATRIX m_View;
+    XMMATRIX m_Projection;
+    XMFLOAT4 m_vMeshColor{ 1, 1, 1, 1 };
 
-	CBChangeOnResize cbChangesOnResize;
-	CBNeverChanges cbNeverChanges;
-	CBChangesEveryFrame cb;
+    // Textura directa (cuando cargas con D3DX/stb)
+    ID3D11ShaderResourceView* m_pModelTextureSRV = nullptr;
+
+    // --- C�mara y animaci�n ---
+    float m_cameraDistance = 6.0f;   // zoom base (rueda del mouse)
+    float m_spinAngle = 0.0f;   // rotaci�n del modelo (radianes)
+    float m_orbitAngle = 0.0f;   // �rbita de c�mara (radianes)
+    float m_spinSpeedDeg = 20.0f;  // vel. giro del modelo (grados/seg)
+    float m_orbitSpeedDeg = 10.0f;  // vel. �rbita de c�mara (grados/seg)
+
+    // Entrada
+    void onMouseWheel(int zDelta);
+
+    // --- Payloads CPU para Constant Buffers ---
+    CBChangeOnResize    cbChangesOnResize;
+    CBNeverChanges      cbNeverChanges;
+    CBChangesEveryFrame cb;
 };

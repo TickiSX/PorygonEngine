@@ -27,6 +27,12 @@
     <Filter Include="Include\ECS">
       <UniqueIdentifier>{b332e468-3959-4b8a-9019-b78c35602784}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Utilities\Memory">
+      <UniqueIdentifier>{72c6a578-90dc-44b2-abc2-51e87a54ed06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Utilities\Vectors">
+      <UniqueIdentifier>{59b2aee1-ca4d-4ed3-a02a-850d417bb436}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PorygonEngine.cpp">
@@ -77,6 +83,9 @@
     <ClCompile Include="include\ResourceManager.h">
       <Filter>Include\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="include\ECS\Entity.h">
+      <Filter>Include\ECS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">
@@ -86,9 +95,6 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
     <ClInclude Include="Include\Window.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Prerequisites.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="include\Resource.h">
@@ -121,9 +127,6 @@
     <ClInclude Include="include\InputLayout.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="include\MeshComponent.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="include\SamplerState.h">
       <Filter>Include</Filter>
     </ClInclude>
@@ -133,17 +136,47 @@
     <ClInclude Include="include\Viewport.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="include\Model3D.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\stb_image.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="include\IResource.h">
       <Filter>Include\Patterns</Filter>
     </ClInclude>
     <ClInclude Include="include\ECS\Component.h">
       <Filter>Include\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Prerequisites.h">
+      <Filter>Include\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MeshComponent.h">
+      <Filter>Include\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Model3D.h">
+      <Filter>Include\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stb_image.h">
+      <Filter>Include\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Utilities\EngineMath.h">
+      <Filter>Include\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Memory\TSharedPointer.h">
+      <Filter>Include\Utilities\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Memory\TStaticPtr.h">
+      <Filter>Include\Utilities\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Memory\TUniquePtr.h">
+      <Filter>Include\Utilities\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Memory\TWeakPointer.h">
+      <Filter>Include\Utilities\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Vectors\Vector2.h">
+      <Filter>Include\Utilities\Vectors</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Vectors\Vector3.h">
+      <Filter>Include\Utilities\Vectors</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Vectors\Vector4.h">
+      <Filter>Include\Utilities\Vectors</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -428,6 +428,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="include\ECS\Entity.h" />
     <ClCompile Include="include\ResourceManager.h" />
     <ClCompile Include="PorygonEngine.cpp" />
     <ClCompile Include="source\BaseApp.cpp" />
@@ -452,6 +453,14 @@
     <ClInclude Include="include\Device.h" />
     <ClInclude Include="include\DeviceContext.h" />
     <ClInclude Include="include\ECS\Component.h" />
+    <ClInclude Include="include\EngineUtilities\Memory\TSharedPointer.h" />
+    <ClInclude Include="include\EngineUtilities\Memory\TStaticPtr.h" />
+    <ClInclude Include="include\EngineUtilities\Memory\TUniquePtr.h" />
+    <ClInclude Include="include\EngineUtilities\Memory\TWeakPointer.h" />
+    <ClInclude Include="include\EngineUtilities\Utilities\EngineMath.h" />
+    <ClInclude Include="include\EngineUtilities\Vectors\Vector2.h" />
+    <ClInclude Include="include\EngineUtilities\Vectors\Vector3.h" />
+    <ClInclude Include="include\EngineUtilities\Vectors\Vector4.h" />
     <ClInclude Include="include\InputLayout.h" />
     <ClInclude Include="include\IResource.h" />
     <ClInclude Include="include\MeshComponent.h" />

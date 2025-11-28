@@ -33,6 +33,9 @@
     <Filter Include="Include\Utilities\Vectors">
       <UniqueIdentifier>{59b2aee1-ca4d-4ed3-a02a-850d417bb436}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\ECS">
+      <UniqueIdentifier>{be4aec1b-8287-4e61-876e-d79431cc9be6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PorygonEngine.cpp">
@@ -85,6 +88,9 @@
     </ClCompile>
     <ClCompile Include="include\ECS\Entity.h">
       <Filter>Include\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ECS\Actor.cpp">
+      <Filter>Source\ECS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +183,12 @@
     </ClInclude>
     <ClInclude Include="include\EngineUtilities\Vectors\Vector4.h">
       <Filter>Include\Utilities\Vectors</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ECS\Actor.h">
+      <Filter>Include\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ECS\Transform.h">
+      <Filter>Include\ECS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

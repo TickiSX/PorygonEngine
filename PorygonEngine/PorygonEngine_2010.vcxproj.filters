@@ -36,6 +36,15 @@
     <Filter Include="Source\ECS">
       <UniqueIdentifier>{be4aec1b-8287-4e61-876e-d79431cc9be6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Imgui">
+      <UniqueIdentifier>{983be280-4514-4b1e-8cc6-34749f97597b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Imgui\Include">
+      <UniqueIdentifier>{6d80b87b-f4f5-43ea-ad99-30b451efd8f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Imgui\Src">
+      <UniqueIdentifier>{235837ac-ac5e-4885-b6be-26beef0d77d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PorygonEngine.cpp">
@@ -91,6 +100,30 @@
     </ClCompile>
     <ClCompile Include="source\ECS\Actor.cpp">
       <Filter>Source\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui-docking\imgui-docking\imgui.cpp">
+      <Filter>Imgui\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui-docking\imgui-docking\imgui_demo.cpp">
+      <Filter>Imgui\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui-docking\imgui-docking\imgui_draw.cpp">
+      <Filter>Imgui\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui-docking\imgui-docking\imgui_tables.cpp">
+      <Filter>Imgui\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui-docking\imgui-docking\imgui_widgets.cpp">
+      <Filter>Imgui\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui-docking\imgui-docking\backends\imgui_impl_dx11.cpp">
+      <Filter>Imgui\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui-docking\imgui-docking\backends\imgui_impl_win32.cpp">
+      <Filter>Imgui\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="source\UserInterface.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -189,6 +222,33 @@
     </ClInclude>
     <ClInclude Include="include\ECS\Transform.h">
       <Filter>Include\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui-docking\imgui-docking\backends\imgui_impl_dx11.h">
+      <Filter>Imgui\Src</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui-docking\imgui-docking\backends\imgui_impl_win32.h">
+      <Filter>Imgui\Src</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui-docking\imgui-docking\imgui.h">
+      <Filter>Imgui\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui-docking\imgui-docking\imgui_internal.h">
+      <Filter>Imgui\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui-docking\imgui-docking\imstb_rectpack.h">
+      <Filter>Imgui\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui-docking\imgui-docking\imstb_textedit.h">
+      <Filter>Imgui\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui-docking\imgui-docking\imstb_truetype.h">
+      <Filter>Imgui\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui-docking\imgui-docking\imconfig.h">
+      <Filter>Imgui\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UserInterface.h">
+      <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

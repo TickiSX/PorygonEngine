@@ -12,67 +12,80 @@
 #include "MeshComponent.h"
 #include "Buffer.h"
 #include "SamplerState.h"
+
+// Inclusiones adicionales necesarias para tu proyecto
 #include "Model3D.h"
+#include "UserInterface.h"
 #include "ECS/Actor.h"
 
-class
-	BaseApp {
+class BaseApp {
 public:
-	BaseApp() = default;
-	~BaseApp() { destroy(); }
+    // Tu constructor personalizado (necesario para tu .cpp)
+    BaseApp(HINSTANCE hInst, int nCmdShow);
 
-	int
-		run(HINSTANCE hInst, int nCmdShow);
+    // Destructor
+    ~BaseApp() { destroy(); }
 
-	HRESULT
-		init();
+    int
+        run(HINSTANCE hInst, int nCmdShow);
 
-	void
-		update(float deltaTime);
+    HRESULT
+        init();
 
-	void
-		render();
+    void
+        update(float deltaTime);
 
-	void
-		destroy();
+    void
+        render();
+
+    void
+        destroy();
 
 private:
-	static LRESULT CALLBACK
-		WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK
+        WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-	Window                              m_window;
-	Device															m_device;
-	DeviceContext												m_deviceContext;
-	SwapChain                           m_swapChain;
-	Texture                             m_backBuffer;
-	RenderTargetView									  m_renderTargetView;
-	Texture                             m_depthStencil;
-	DepthStencilView									  m_depthStencilView;
-	Viewport                            m_viewport;
-	ShaderProgram												m_shaderProgram;
-	//MeshComponent												m_mesh;
-	//Buffer															m_vertexBuffer;
-	//Buffer															m_indexBuffer;
-	Buffer															m_cbNeverChanges;
-	Buffer															m_cbChangeOnResize;
-	//Buffer															m_cbChangesEveryFrame;
-	Texture 														m_cyberGunAlbedo;
-	//SamplerState												m_samplerState;
+    Window                          m_window;
+    Device                          m_device;
+    DeviceContext                   m_deviceContext;
+    SwapChain                       m_swapChain;
+    Texture                         m_backBuffer;
+    RenderTargetView                m_renderTargetView;
+    Texture                         m_depthStencil;
+    DepthStencilView                m_depthStencilView;
+    Viewport                        m_viewport;
+    ShaderProgram                   m_shaderProgram;
 
-	//XMMATRIX                            m_World;
-	XMMATRIX                            m_View;
-	XMMATRIX                            m_Projection;
-	//XMFLOAT4                            m_vMeshColor;// (0.7f, 0.7f, 0.7f, 1.0f);
+    // MeshComponent                 m_mesh;
+    // Buffer                        m_vertexBuffer;
+    // Buffer                        m_indexBuffer;
 
-	std::vector<EU::TSharedPointer<Actor>> m_actors;
-	EU::TSharedPointer<Actor> m_cyberGun;
+    Buffer                          m_cbNeverChanges;
+    Buffer                          m_cbChangeOnResize;
+    Buffer                          m_cbChangesEveryFrame;
 
+    Texture                         m_cyberGunAlbedo;       // Tu textura especifica
+    SamplerState                    m_samplerState;
 
-	Model3D* m_model;
+    // Matrices y Variables Globales
+    XMMATRIX                        m_World;
+    XMMATRIX                        m_View;
+    XMMATRIX                        m_Projection;
+    XMFLOAT4                        m_vMeshColor;
 
+    // Actores
+    std::vector<EU::TSharedPointer<Actor>> m_actors;
+    EU::TSharedPointer<Actor>              m_cyberGun;
 
-	CBChangeOnResize										cbChangesOnResize;
-	CBNeverChanges											cbNeverChanges;
-	//CBChangesEveryFrame									cb;
+    // Recursos
+    Model3D* m_model;
+
+    // Estructuras de Constant Buffers
+    CBChangeOnResize                    cbChangesOnResize;
+    CBNeverChanges                      cbNeverChanges;
+    CBChangesEveryFrame                 cb;
+
+    // Interfaz de Usuario
+    UserInterface                       UI;
 };

@@ -100,37 +100,65 @@ BaseApp::init() {
 
     // Load Resources -> Modelos, Texturas e Interfaz de usuario
 
-    // Set CyberGun Actor
+    // -----------------------------------------------------------------------
+    // Set CyberGun Actor (CON TEXTURAS PNG Y CARGA MULTIPLE)
+    // -----------------------------------------------------------------------
     m_cyberGun = EU::MakeShared<Actor>(m_device);
 
     if (!m_cyberGun.isNull()) {
         // Crear vertex buffer y index buffer para el modelo
         std::vector<MeshComponent> cyberGunMeshes;
+
         // RUTA DE MODELO
-        m_model = new Model3D("Assets/cybergun.fbx", ModelType::FBX);
+        m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX);
         cyberGunMeshes = m_model->GetMeshes();
 
+        // Vector donde guardaremos todas las texturas
         std::vector<Texture> cyberGunTextures;
-        // RUTA DE TEXTURA
-        hr = m_cyberGunAlbedo.init(m_device, "Assets/UltraTTexture", ExtensionType::JPG);
 
-        // Load the Texture
+        // 1. CARGAR ALBEDO (COLOR)
+        hr = m_cyberGunAlbedo.init(m_device, "Assets/MA5C_2K_Color", ExtensionType::PNG);
         if (FAILED(hr)) {
-            ERROR("Main", "InitDevice",
-                ("Failed to initialize cyberGunAlbedo. HRESULT: " + std::to_string(hr)).c_str());
+            ERROR("Main", "InitDevice", ("Failed to load CyberGun Albedo. HRESULT: " + std::to_string(hr)).c_str());
             return hr;
         }
         cyberGunTextures.push_back(m_cyberGunAlbedo);
 
+        // 2. CARGAR NORMAL MAP
+        hr = m_cyberGunNormal.init(m_device, "Assets/MA5C_2K_NormalGL", ExtensionType::PNG);
+        if (FAILED(hr)) {
+            ERROR("Main", "InitDevice", ("Failed to load CyberGun Normal. HRESULT: " + std::to_string(hr)).c_str());
+            return hr;
+        }
+        cyberGunTextures.push_back(m_cyberGunNormal);
+
+        // 3. CARGAR METALLIC
+        hr = m_cyberGunMetallic.init(m_device, "Assets/MA5C_2K_Metallic", ExtensionType::PNG);
+        if (FAILED(hr)) {
+            ERROR("Main", "InitDevice", ("Failed to load CyberGun Metallic. HRESULT: " + std::to_string(hr)).c_str());
+            return hr;
+        }
+        cyberGunTextures.push_back(m_cyberGunMetallic);
+
+        // 4. CARGAR GLOSSINESS
+        hr = m_cyberGunGlossiness.init(m_device, "Assets/MA5C_2K_Glossiness", ExtensionType::PNG);
+        if (FAILED(hr)) {
+            ERROR("Main", "InitDevice", ("Failed to load CyberGun Glossiness. HRESULT: " + std::to_string(hr)).c_str());
+            return hr;
+        }
+        cyberGunTextures.push_back(m_cyberGunGlossiness);
+
+        // Configurar el actor
         m_cyberGun->setMesh(m_device, cyberGunMeshes);
         m_cyberGun->setTextures(cyberGunTextures);
         m_cyberGun->setName("CyberGun");
         m_actors.push_back(m_cyberGun);
 
+        // Transform inicial
         m_cyberGun->getComponent<Transform>()->setTransform(
-            EU::Vector3(0.0f, 0.0f, 0.0f), // Posici�n
-            EU::Vector3(0.0f, 0.0f, 0.0f), // Rotaci�n
-            EU::Vector3(1.0f, 1.0f, 1.0f)  // Escala
+            EU::Vector3(0.0f, 0.0f, 0.0f), // Posición
+            EU::Vector3(0.0f, 0.0f, 0.0f), // Rotación
+            EU::Vector3(1.0f, 1.0f, 1.0f)  // Escala (Si se ve muy pequeño, cambia a 10.0f o 100.0f)
         );
 
     }
@@ -138,6 +166,7 @@ BaseApp::init() {
         ERROR("Main", "InitDevice", "Failed to create cyber Gun Actor.");
         return E_FAIL;
     }
+    // -----------------------------------------------------------------------
 
     // Define the input layout
     std::vector<D3D11_INPUT_ELEMENT_DESC> Layout;
@@ -179,28 +208,6 @@ BaseApp::init() {
         return hr;
     }
 
-    //// Create vertex buffer
-    //hr = m_vertexBuffer.init(m_device, TRex[0], D3D11_BIND_VERTEX_BUFFER);
-    //
-    //if (FAILED(hr)) {
-    //  ERROR("Main", "InitDevice",
-    //    ("Failed to initialize VertexBuffer. HRESULT: " + std::to_string(hr)).c_str());
-    //  return hr;
-    //}
-    //
-    //// Create index buffer
-    //hr = m_indexBuffer.init(m_device, TRex[0], D3D11_BIND_INDEX_BUFFER);
-    //
-    //if (FAILED(hr)) {
-    //  ERROR("Main", "InitDevice",
-    //    ("Failed to initialize IndexBuffer. HRESULT: " + std::to_string(hr)).c_str());
-    //  return hr;
-    //}
-
-    //auto& resourceMan = ResourceManager::getInstance();
-    //std::shared_ptr<Model3D> model = resourceMan.GetOrLoad<Model3D>("CubeModel", "CyberGun.fbx", ModelType::FBX);
-
-
     // Create the constant buffers
     hr = m_cbNeverChanges.init(m_device, sizeof(CBNeverChanges));
     if (FAILED(hr)) {
@@ -216,29 +223,18 @@ BaseApp::init() {
         return hr;
     }
 
-    //hr = m_cbChangesEveryFrame.init(m_device, sizeof(CBChangesEveryFrame));
-    //if (FAILED(hr)) {
-    //  ERROR("Main", "InitDevice",
-    //    ("Failed to initialize ChangesEveryFrame Buffer. HRESULT: " + std::to_string(hr)).c_str());
-    //  return hr;
-    //}  
+    // -----------------------------------------------------------------------
+    // CAMARA (VIEW MATRIX) - AJUSTADA PARA VER MEJOR EL MODELO
+    // -----------------------------------------------------------------------
+    // Posición del ojo: (X=0.0, Y=1.5, Z=-3.0) -> Más cerca y ligeramente elevada
+    XMVECTOR Eye = XMVectorSet(0.0f, 1.5f, -3.0f, 0.0f);
 
-    // Create the sample state
-    //hr = m_samplerState.init(m_device);
-    //if (FAILED(hr)) {
-    //  ERROR("Main", "InitDevice",
-    //    ("Failed to initialize SamplerState. HRESULT: " + std::to_string(hr)).c_str());
-    //  return hr;
-    //}
+    // Punto al que mira: (0,0,0) -> El centro del mundo donde está el arma
+    XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 
-    // Initialize the world matrices
-    //m_World = XMMatrixIdentity();
-
-    // Initialize the view matrix
-    XMVECTOR Eye = XMVectorSet(0.0f, 18.0f, -18.0f, 0.0f); // COORDENADAS DE CAMARA
-    XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
     XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
     m_View = XMMatrixLookAtLH(Eye, At, Up);
+    // -----------------------------------------------------------------------
 
 
     // Initialize the projection matrix
@@ -313,7 +309,7 @@ void BaseApp::update(float deltaTime)
     }
     // Update User Interface
 
-    // Actualizar la matriz de proyecci�n y vista
+    // Actualizar la matriz de proyección y vista
     cbNeverChanges.mView = XMMatrixTranspose(m_View);
     m_cbNeverChanges.update(m_deviceContext, nullptr, 0, nullptr, &cbNeverChanges, 0, 0);
     m_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, m_window.m_width / (FLOAT)m_window.m_height, 0.01f, 100.0f);
@@ -325,25 +321,6 @@ void BaseApp::update(float deltaTime)
     for (auto& actor : m_actors) {
         actor->update(deltaTime, m_deviceContext);
     }
-
-    // Modify the color
-    //m_vMeshColor.x = 1.0f;
-    //m_vMeshColor.y = 1.0f;
-    //m_vMeshColor.z = 1.0f;
-
-    // Rotate cube around the origin
-    // Aplicar escala
-    //XMMATRIX scaleMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
-    // Aplicar rotacion
-    //XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(-0.60f, 3.0f, -0.20f);
-    // Aplicar traslacion
-    //XMMATRIX translationMatrix = XMMatrixTranslation(2.0f, -4.9f, 11.0f);
-
-    // Componer la matriz final en el orden: scale -> rotation -> translation
-    //m_World = scaleMatrix * rotationMatrix * translationMatrix;
-    //cb.mWorld = XMMatrixTranspose(m_World);
-    //cb.vMeshColor = m_vMeshColor;
-    //m_cbChangesEveryFrame.update(m_deviceContext, nullptr, 0, nullptr, &cb, 0, 0);
 }
 
 void
@@ -373,19 +350,6 @@ BaseApp::render() {
     // Render UI
     UI.render();
 
-    // Render the cube
-     // Asignar buffers Vertex e Index
-    //m_vertexBuffer.render(m_deviceContext, 0, 1);
-    //m_indexBuffer.render(m_deviceContext, 0, 1, false, DXGI_FORMAT_R32_UINT);
-    //m_cbChangesEveryFrame.render(m_deviceContext, 2, 1);
-    //m_cbChangesEveryFrame.render(m_deviceContext, 2, 1, true);
-    // Asignar textura y sampler
-    //m_textureCube.render(m_deviceContext, 0, 1);
-    //m_samplerState.render(m_deviceContext, 0, 1);
-    //m_deviceContext.DrawIndexed(TRex[0].m_numIndex, 0, 0);
-    // Set primitive topology
-    //m_deviceContext.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
     // Present our back buffer to our front buffer
     m_swapChain.present();
 }
@@ -396,14 +360,8 @@ BaseApp::destroy() {
 
     if (m_model) delete m_model; // Limpieza de memoria 
 
-    //m_samplerState.destroy();
-    //m_textureCube.destroy();
-
     m_cbNeverChanges.destroy();
     m_cbChangeOnResize.destroy();
-    //m_cbChangesEveryFrame.destroy();
-    //m_vertexBuffer.destroy();
-    //m_indexBuffer.destroy();
     m_shaderProgram.destroy();
     m_depthStencil.destroy();
     m_depthStencilView.destroy();

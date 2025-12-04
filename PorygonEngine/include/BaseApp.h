@@ -65,7 +65,12 @@ private:
     Buffer                          m_cbChangeOnResize;
     Buffer                          m_cbChangesEveryFrame;
 
-    Texture                         m_cyberGunAlbedo;       // Tu textura especifica
+    // --- TEXTURAS DEL CYBERGUN ---
+    Texture                         m_cyberGunAlbedo;       // Color
+    Texture                         m_cyberGunNormal;       // Normal Map (NUEVA)
+    Texture                         m_cyberGunMetallic;     // Metallic (NUEVA)
+    Texture                         m_cyberGunGlossiness;   // Glossiness (NUEVA)
+
     SamplerState                    m_samplerState;
 
     // Matrices y Variables Globales

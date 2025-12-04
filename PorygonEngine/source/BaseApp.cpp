@@ -1,7 +1,6 @@
 ﻿#include "BaseApp.h"
 #include "ResourceManager.h"
 
-// Necesario para que funcione tu interfaz ImGui
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 BaseApp::BaseApp(HINSTANCE hInst, int nCmdShow) {
@@ -158,7 +157,7 @@ BaseApp::init() {
         m_cyberGun->getComponent<Transform>()->setTransform(
             EU::Vector3(0.0f, 0.0f, 0.0f), // Posición
             EU::Vector3(0.0f, 0.0f, 0.0f), // Rotación
-            EU::Vector3(1.0f, 1.0f, 1.0f)  // Escala (Si se ve muy pequeño, cambia a 10.0f o 100.0f)
+            EU::Vector3(1.0f, 1.0f, 1.0f)  // Escala 
         );
 
     }
@@ -226,7 +225,7 @@ BaseApp::init() {
     // -----------------------------------------------------------------------
     // CAMARA (VIEW MATRIX) - AJUSTADA PARA VER MEJOR EL MODELO
     // -----------------------------------------------------------------------
-    // Posición del ojo: (X=0.0, Y=1.5, Z=-3.0) -> Más cerca y ligeramente elevada
+    // Posición del ojo: (X=0.0, Y=1.5, Z=-3.0)
     XMVECTOR Eye = XMVectorSet(0.0f, 1.5f, -3.0f, 0.0f);
 
     // Punto al que mira: (0,0,0) -> El centro del mundo donde está el arma

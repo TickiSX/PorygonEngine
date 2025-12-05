@@ -1,14 +1,18 @@
 ﻿#pragma once
+
 #include "Prerequisites.h"
 
 /**
- * @brief Encapsula el contexto de dispositivo de DirectX 11.
+ * @class DeviceContext
+ * @brief Encapsula la interfaz ID3D11DeviceContext (Contexto Inmediato).
  *
- * La clase DeviceContext se encarga de administrar los estados,
- * buffers, shaders y recursos asociados al pipeline de renderizado.
+ * Mientras que la clase @c Device se encarga de *crear* recursos, el @c DeviceContext
+ * se encarga de *usarlos*. Es responsable de enviar comandos de dibujo a la GPU,
+ * configurar los estados del pipeline (Shaders, Blend, Depth) y manipular los buffers.
+ *
+ * @note El contexto inmediato no es thread-safe; debe ser accedido por un solo hilo a la vez.
  */
-class
-    DeviceContext {
+class DeviceContext {
 public:
     /**
      * @brief Constructor por defecto.
@@ -20,242 +24,258 @@ public:
      */
     ~DeviceContext() = default;
 
-    /**
-     * @brief Inicializa el contexto de dispositivo.
-     */
-    void
-        init();
+    // ------------------------------------------------------------------------
+    // Ciclo de Vida
+    // ------------------------------------------------------------------------
 
     /**
-     * @brief Actualiza el estado del contexto de dispositivo.
+     * @brief Inicializa el contexto (generalmente obtenido desde el Device).
      */
-    void
-        update();
+    void init();
 
     /**
-     * @brief Ejecuta las operaciones de renderizado con el contexto.
+     * @brief Actualiza la lógica del contexto (generalmente vacío).
      */
-    void
-        render();
+    void update();
 
     /**
-     * @brief Libera los recursos asociados al contexto.
+     * @brief Ejecuta operaciones generales de renderizado.
      */
-    void
-        destroy();
+    void render();
 
     /**
-     * @brief Establece los render targets y el depth-stencil en el pipeline.
+     * @brief Libera la referencia al ID3D11DeviceContext.
+     */
+    void destroy();
+
+    // ------------------------------------------------------------------------
+    // Output Merger (OM) Stage - Configuración de destino de renderizado
+    // ------------------------------------------------------------------------
+
+    /**
+     * @brief Establece dónde se dibujarán los píxeles (Render Targets) y el buffer de profundidad.
      *
-     * @param NumViews N�mero de vistas de render.
-     * @param ppRenderTargetViews Array de vistas de render target.
-     * @param pDepthStencilView Vista de profundidad/stencil.
+     * @param NumViews             Número de vistas de render target a enlazar.
+     * @param ppRenderTargetViews  Array de punteros a las vistas (RTV).
+     * @param pDepthStencilView    Puntero a la vista de profundidad/stencil (DSV).
      */
-    void
-        OMSetRenderTargets(unsigned int NumViews,
-            ID3D11RenderTargetView* const* ppRenderTargetViews,
-            ID3D11DepthStencilView* pDepthStencilView);
+    void OMSetRenderTargets(unsigned int NumViews,
+        ID3D11RenderTargetView* const* ppRenderTargetViews,
+        ID3D11DepthStencilView* pDepthStencilView);
 
     /**
-     * @brief Define los viewports activos en el rasterizador.
+     * @brief Establece el estado de mezcla (Blending).
+     * Controla cómo se combinan los nuevos píxeles con los que ya existen en el buffer (transparencias).
      *
-     * @param NumViewports N�mero de viewports.
-     * @param pViewports Array de viewports.
+     * @param pBlendState Estado de blending (nullptr para defecto).
+     * @param BlendFactor Array de 4 floats con factores de mezcla globales.
+     * @param SampleMask  Máscara de cobertura de muestras (0xFFFFFFFF por defecto).
      */
-    void
-        RSSetViewports(unsigned int NumViewports,
-            const D3D11_VIEWPORT* pViewports);
+    void OMSetBlendState(ID3D11BlendState* pBlendState,
+        const float BlendFactor[4],
+        unsigned int SampleMask);
 
     /**
-     * @brief Establece el Input Layout para la etapa de entrada de ensamblaje.
+     * @brief Limpia un Render Target con un color sólido.
      *
-     * @param pInputLayout Puntero al input layout.
+     * @param pRenderTargetView Vista a limpiar.
+     * @param ColorRGBA         Array [R, G, B, A] con el color de fondo.
      */
-    void
-        IASetInputLayout(ID3D11InputLayout* pInputLayout);
+    void ClearRenderTargetView(ID3D11RenderTargetView* pRenderTargetView,
+        const float ColorRGBA[4]);
 
     /**
-     * @brief Asigna buffers de v�rtices al pipeline.
+     * @brief Limpia el buffer de profundidad y/o stencil.
      *
-     * @param StartSlot Slot inicial.
-     * @param NumBuffers N�mero de buffers.
-     * @param ppVertexBuffers Array de buffers de v�rtices.
-     * @param pStrides Array con el tama�o de cada v�rtice.
-     * @param pOffsets Array con los desplazamientos iniciales.
+     * @param pDepthStencilView Vista a limpiar.
+     * @param ClearFlags        Flags (D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL).
+     * @param Depth             Valor para limpiar la profundidad (usualmente 1.0f).
+     * @param Stencil           Valor para limpiar el stencil (usualmente 0).
      */
-    void
-        IASetVertexBuffers(unsigned int StartSlot,
-            unsigned int NumBuffers,
-            ID3D11Buffer* const* ppVertexBuffers,
-            const unsigned int* pStrides,
-            const unsigned int* pOffsets);
+    void ClearDepthStencilView(ID3D11DepthStencilView* pDepthStencilView,
+        unsigned int ClearFlags,
+        FLOAT Depth,
+        UINT8 Stencil);
+
+    // ------------------------------------------------------------------------
+    // Rasterizer (RS) Stage - Configuración de viewport y recortes
+    // ------------------------------------------------------------------------
 
     /**
-     * @brief Asigna un buffer de �ndices al pipeline.
+     * @brief Define el área de la ventana donde se dibujará (Viewport).
      *
-     * @param pIndexBuffer Buffer de �ndices.
-     * @param Format Formato de los �ndices.
-     * @param Offset Desplazamiento inicial.
+     * @param NumViewports Número de viewports.
+     * @param pViewports   Array de estructuras D3D11_VIEWPORT.
      */
-    void
-        IASetIndexBuffer(ID3D11Buffer* pIndexBuffer,
-            DXGI_FORMAT Format,
-            unsigned int Offset);
+    void RSSetViewports(unsigned int NumViewports,
+        const D3D11_VIEWPORT* pViewports);
 
     /**
-     * @brief Establece la topolog�a de primitivas para el ensamblador de entrada.
+     * @brief Establece el estado del rasterizador (Culling, Wireframe, Scissor).
      *
-     * @param Topology Tipo de primitiva (ejemplo: tri�ngulos, l�neas).
+     * @param pRasterizerState Puntero al objeto de estado.
      */
-    void
-        IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY Topology);
+    void RSSetState(ID3D11RasterizerState* pRasterizerState);
+
+    // ------------------------------------------------------------------------
+    // Input Assembler (IA) Stage - Configuración de geometría
+    // ------------------------------------------------------------------------
 
     /**
-     * @brief Copia datos desde memoria de CPU a un recurso de GPU.
+     * @brief Establece el formato de los vértices (Input Layout).
+     * Define cómo interpretar los datos del Vertex Buffer.
      *
-     * @param pDstResource Recurso de destino.
-     * @param DstSubresource Subrecurso de destino.
-     * @param pDstBox Regi�n a actualizar (puede ser nullptr).
-     * @param pSrcData Puntero a los datos de origen.
-     * @param SrcRowPitch N�mero de bytes por fila de datos.
-     * @param SrcDepthPitch N�mero de bytes por capa de datos.
+     * @param pInputLayout Puntero al layout.
      */
-    void
-        UpdateSubresource(ID3D11Resource* pDstResource,
-            unsigned int DstSubresource,
-            const D3D11_BOX* pDstBox,
-            const void* pSrcData,
-            unsigned int SrcRowPitch,
-            unsigned int SrcDepthPitch);
+    void IASetInputLayout(ID3D11InputLayout* pInputLayout);
 
     /**
-     * @brief Limpia un render target con un color espec�fico.
+     * @brief Enlaza los buffers de vértices al pipeline.
      *
-     * @param pRenderTargetView Vista del render target.
-     * @param ColorRGBA Array de 4 floats con el color RGBA.
+     * @param StartSlot       Ranura de entrada (usualmente 0).
+     * @param NumBuffers      Número de buffers a enlazar.
+     * @param ppVertexBuffers Array de punteros a los buffers.
+     * @param pStrides        Array de tamaños de estructura de vértice (stride).
+     * @param pOffsets        Array de desplazamientos en bytes.
      */
-    void
-        ClearRenderTargetView(ID3D11RenderTargetView* pRenderTargetView,
-            const float ColorRGBA[4]);
+    void IASetVertexBuffers(unsigned int StartSlot,
+        unsigned int NumBuffers,
+        ID3D11Buffer* const* ppVertexBuffers,
+        const unsigned int* pStrides,
+        const unsigned int* pOffsets);
 
     /**
-     * @brief Limpia un buffer de profundidad y stencil.
+     * @brief Enlaza el buffer de índices.
      *
-     * @param pDepthStencilView Vista de profundidad/stencil.
-     * @param ClearFlags Banderas de limpieza (ejemplo: profundidad, stencil).
-     * @param Depth Valor de profundidad inicial.
-     * @param Stencil Valor de stencil inicial.
+     * @param pIndexBuffer Buffer de índices.
+     * @param Format       Formato (DXGI_FORMAT_R16_UINT o R32_UINT).
+     * @param Offset       Desplazamiento en bytes.
      */
-    void
-        ClearDepthStencilView(ID3D11DepthStencilView* pDepthStencilView,
-            unsigned int ClearFlags,
-            FLOAT Depth,
-            UINT8 Stencil);
+    void IASetIndexBuffer(ID3D11Buffer* pIndexBuffer,
+        DXGI_FORMAT Format,
+        unsigned int Offset);
 
     /**
-     * @brief Asigna un shader de v�rtices al pipeline.
+     * @brief Define cómo se interpretan los vértices (Triángulos, Líneas, Puntos).
      *
-     * @param pVertexShader Shader de v�rtices.
-     * @param ppClassInstances Array de instancias de clase.
-     * @param NumClassInstances N�mero de instancias de clase.
+     * @param Topology Tipo de topología (ej. D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST).
      */
-    void
-        VSSetShader(ID3D11VertexShader* pVertexShader,
-            ID3D11ClassInstance* const* ppClassInstances,
-            UINT NumClassInstances);
+    void IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY Topology);
+
+    // ------------------------------------------------------------------------
+    // Vertex Shader (VS) Stage
+    // ------------------------------------------------------------------------
 
     /**
-     * @brief Asigna buffers constantes a la etapa de vertex shader.
+     * @brief Establece el Vertex Shader activo.
      *
-     * @param StartSlot Slot inicial.
-     * @param NumBuffers N�mero de buffers.
+     * @param pVertexShader     Puntero al shader compilado.
+     * @param ppClassInstances  Instancias de enlace dinámico (generalmente nullptr).
+     * @param NumClassInstances Número de instancias.
+     */
+    void VSSetShader(ID3D11VertexShader* pVertexShader,
+        ID3D11ClassInstance* const* ppClassInstances,
+        UINT NumClassInstances);
+
+    /**
+     * @brief Establece Constant Buffers para el Vertex Shader.
+     *
+     * @param StartSlot         Ranura inicial.
+     * @param NumBuffers        Número de buffers.
      * @param ppConstantBuffers Array de buffers constantes.
      */
-    void
-        VSSetConstantBuffers(UINT StartSlot,
-            UINT NumBuffers,
-            ID3D11Buffer* const* ppConstantBuffers);
+    void VSSetConstantBuffers(UINT StartSlot,
+        UINT NumBuffers,
+        ID3D11Buffer* const* ppConstantBuffers);
+
+    // ------------------------------------------------------------------------
+    // Pixel Shader (PS) Stage
+    // ------------------------------------------------------------------------
 
     /**
-     * @brief Asigna un shader de p�xeles al pipeline.
+     * @brief Establece el Pixel Shader activo.
      *
-     * @param pPixelShader Shader de p�xeles.
-     * @param ppClassInstances Array de instancias de clase.
-     * @param NumClassInstances N�mero de instancias de clase.
+     * @param pPixelShader      Puntero al shader compilado.
+     * @param ppClassInstances  Instancias de enlace dinámico (generalmente nullptr).
+     * @param NumClassInstances Número de instancias.
      */
-    void
-        PSSetShader(ID3D11PixelShader* pPixelShader,
-            ID3D11ClassInstance* const* ppClassInstances,
-            UINT NumClassInstances);
+    void PSSetShader(ID3D11PixelShader* pPixelShader,
+        ID3D11ClassInstance* const* ppClassInstances,
+        UINT NumClassInstances);
 
     /**
-     * @brief Asigna buffers constantes a la etapa de pixel shader.
+     * @brief Establece Constant Buffers para el Pixel Shader.
      *
-     * @param StartSlot Slot inicial.
-     * @param NumBuffers N�mero de buffers.
+     * @param StartSlot         Ranura inicial.
+     * @param NumBuffers        Número de buffers.
      * @param ppConstantBuffers Array de buffers constantes.
      */
-    void
-        PSSetConstantBuffers(UINT StartSlot,
-            UINT NumBuffers,
-            ID3D11Buffer* const* ppConstantBuffers);
+    void PSSetConstantBuffers(UINT StartSlot,
+        UINT NumBuffers,
+        ID3D11Buffer* const* ppConstantBuffers);
 
     /**
-     * @brief Asigna recursos de textura a la etapa de pixel shader.
+     * @brief Establece recursos (Texturas) para el Pixel Shader.
      *
-     * @param StartSlot Slot inicial.
-     * @param NumViews N�mero de vistas.
-     * @param ppShaderResourceViews Array de vistas de recursos.
+     * @param StartSlot             Ranura inicial de textura (t0, t1, etc.).
+     * @param NumViews              Número de texturas.
+     * @param ppShaderResourceViews Array de vistas de recursos (SRV).
      */
-    void
-        PSSetShaderResources(UINT StartSlot,
-            UINT NumViews,
-            ID3D11ShaderResourceView* const* ppShaderResourceViews);
+    void PSSetShaderResources(UINT StartSlot,
+        UINT NumViews,
+        ID3D11ShaderResourceView* const* ppShaderResourceViews);
 
     /**
-     * @brief Asigna estados de muestreo a la etapa de pixel shader.
+     * @brief Establece los Samplers (modos de filtrado) para el Pixel Shader.
      *
-     * @param StartSlot Slot inicial.
-     * @param NumSamplers N�mero de samplers.
-     * @param ppSamplers Array de estados de muestreo.
+     * @param StartSlot   Ranura inicial de sampler (s0, s1, etc.).
+     * @param NumSamplers Número de samplers.
+     * @param ppSamplers  Array de estados de muestreo.
      */
-    void
-        PSSetSamplers(UINT StartSlot,
-            UINT NumSamplers,
-            ID3D11SamplerState* const* ppSamplers);
+    void PSSetSamplers(UINT StartSlot,
+        UINT NumSamplers,
+        ID3D11SamplerState* const* ppSamplers);
+
+    // ------------------------------------------------------------------------
+    // Comandos de Dibujo (Draw Call)
+    // ------------------------------------------------------------------------
 
     /**
-     * @brief Dibuja primitivas indexadas.
+     * @brief Dibuja primitivas indexadas. Comando final para renderizar un objeto.
      *
-     * @param IndexCount N�mero de �ndices a dibujar.
-     * @param StartIndexLocation �ndice inicial.
-     * @param BaseVertexLocation Desplazamiento base de v�rtices.
+     * @param IndexCount         Número de índices a dibujar.
+     * @param StartIndexLocation Índice de inicio en el buffer.
+     * @param BaseVertexLocation Valor base sumado a cada índice (offset de vértices).
      */
-    void
-        DrawIndexed(UINT IndexCount,
-            UINT StartIndexLocation,
-            INT BaseVertexLocation);
+    void DrawIndexed(UINT IndexCount,
+        UINT StartIndexLocation,
+        INT BaseVertexLocation);
+
+    // ------------------------------------------------------------------------
+    // Manipulación de Recursos (Subresources)
+    // ------------------------------------------------------------------------
 
     /**
-     * @brief Establece el estado del rasterizador.
+     * @brief Actualiza datos en la GPU desde la CPU.
+     * Útil para actualizar Constant Buffers o texturas dinámicas.
      *
-     * @param pRasterizerState Estado del rasterizador.
+     * @param pDstResource   Recurso de destino en GPU.
+     * @param DstSubresource Índice del subrecurso (nivel de mipmap/array).
+     * @param pDstBox        Región de destino (nullptr para todo el recurso).
+     * @param pSrcData       Puntero a los datos en RAM.
+     * @param SrcRowPitch    Tamaño de fila en bytes (para texturas).
+     * @param SrcDepthPitch  Tamaño de profundidad en bytes (para texturas 3D).
      */
-    void
-        RSSetState(ID3D11RasterizerState* pRasterizerState);
-
-    /**
-     * @brief Establece el estado de blending para el pipeline.
-     *
-     * @param pBlendState Estado de blending.
-     * @param BlendFactor Factores de mezcla RGBA.
-     * @param SampleMask M�scara de muestras.
-     */
-    void
-        OMSetBlendState(ID3D11BlendState* pBlendState,
-            const float BlendFactor[4],
-            unsigned int SampleMask);
+    void UpdateSubresource(ID3D11Resource* pDstResource,
+        unsigned int DstSubresource,
+        const D3D11_BOX* pDstBox,
+        const void* pSrcData,
+        unsigned int SrcRowPitch,
+        unsigned int SrcDepthPitch);
 
 public:
-    ID3D11DeviceContext* m_deviceContext = nullptr; /**< Puntero al contexto de dispositivo de DirectX. */
+    /**
+     * @brief Puntero nativo al contexto de DirectX 11.
+     */
+    ID3D11DeviceContext* m_deviceContext = nullptr;
 };

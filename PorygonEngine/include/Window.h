@@ -1,15 +1,18 @@
 ﻿#pragma once
+
 #include "Prerequisites.h"
 
 /**
  * @class Window
- * @brief Representa una ventana de aplicaci�n en Windows.
+ * @brief Encapsula una ventana del sistema operativo Windows (Win32 API).
  *
- * Esta clase encapsula la creaci�n, gesti�n, actualizaci�n y destrucci�n
- * de una ventana Win32, utilizada como superficie de renderizado para DirectX.
+ * Esta clase gestiona el ciclo de vida de la ventana, que incluye:
+ * 1. Registro de la clase de ventana (WNDCLASSEX).
+ * 2. Creación de la ventana física (CreateWindowEx).
+ * 3. Gestión del bucle de mensajes (si se implementa en update).
+ * 4. Definición del área cliente donde DirectX renderizará los gráficos.
  */
-class
-	Window {
+class Window {
 public:
 	/**
 	 * @brief Constructor por defecto.
@@ -22,67 +25,68 @@ public:
 	~Window() = default;
 
 	/**
-	 * @brief Inicializa y crea la ventana de la aplicaci�n.
+	 * @brief Inicializa y crea la ventana de la aplicación.
 	 *
-	 * @param hInstance Manejador de la instancia de la aplicaci�n.
-	 * @param nCmdShow Par�metro que indica c�mo se mostrar� la ventana.
-	 * @param wndproc Funci�n de procedimiento de ventana (callback de mensajes).
-	 * @return HRESULT C�digo de resultado (S_OK si se cre� correctamente).
+	 * Registra la clase de ventana y realiza la llamada a CreateWindow.
+	 *
+	 * @param hInstance Manejador (Handle) de la instancia de la aplicación actual.
+	 * @param nCmdShow  Comando que indica cómo se debe mostrar la ventana (minimizado, maximizado, etc.).
+	 * @param wndproc   Puntero a la función de procedimiento de ventana (Callback para eventos de input).
+	 * @return HRESULT  S_OK si la ventana se creó correctamente, E_FAIL si falló.
 	 */
-	HRESULT
-		init(HINSTANCE hInstance, int nCmdShow, WNDPROC wndproc);
+	HRESULT init(HINSTANCE hInstance, int nCmdShow, WNDPROC wndproc);
 
 	/**
-	 * @brief Actualiza el estado de la ventana.
+	 * @brief Actualiza la lógica de la ventana.
 	 *
-	 * Normalmente procesa eventos o l�gica asociada al ciclo de vida de la ventana.
+	 * Generalmente maneja la pila de mensajes de Windows (PeekMessage/DispatchMessage)
+	 * para mantener la ventana responsiva.
 	 */
-	void
-		update();
+	void update();
 
 	/**
-	 * @brief Renderiza el contenido de la ventana.
+	 * @brief Renderiza el contenido (placeholder).
 	 *
-	 * Generalmente se usa junto con el contexto gr�fico (DirectX/OpenGL).
+	 * @note La clase Window usualmente no renderiza por sí misma, sino que provee el HWND
+	 * para que la SwapChain de DirectX presente la imagen aquí.
 	 */
-	void
-		render();
+	void render();
 
 	/**
-	 * @brief Libera los recursos y destruye la ventana.
+	 * @brief Destruye la ventana y libera el manejador (HWND).
 	 */
-	void
-		destroy();
+	void destroy();
 
 public:
 	/**
 	 * @brief Handle de la ventana Win32.
+	 * Identificador fundamental requerido por DirectX para crear la SwapChain.
 	 */
 	HWND m_hWnd = nullptr;
 
 	/**
-	 * @brief Ancho actual de la ventana.
+	 * @brief Ancho actual del área cliente de la ventana.
 	 */
 	unsigned int m_width;
 
 	/**
-	 * @brief Alto actual de la ventana.
+	 * @brief Alto actual del área cliente de la ventana.
 	 */
 	unsigned int m_height;
 
 private:
 	/**
-	 * @brief Handle de la instancia de la aplicaci�n.
+	 * @brief Handle de la instancia de la aplicación (proporcionado por el SO al inicio).
 	 */
 	HINSTANCE m_hInst = nullptr;
 
 	/**
-	 * @brief Rect�ngulo que define las dimensiones de la ventana.
+	 * @brief Estructura que define las coordenadas y dimensiones del rectángulo de la ventana.
 	 */
 	RECT m_rect;
 
 	/**
-	 * @brief Nombre de la ventana (por defecto "Porygon Engine").
+	 * @brief Título que aparecerá en la barra superior de la ventana.
 	 */
 	std::string m_windowName = "Porygon Engine";
 };

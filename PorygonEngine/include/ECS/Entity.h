@@ -1,68 +1,79 @@
 ﻿#pragma once
+
 #include "Prerequisites.h"
 #include "Component.h"
 
+// Forward Declaration
 class DeviceContext;
 
-class
-    Entity {
+/**
+ * @class Entity
+ * @brief Clase base abstracta para todas las entidades del juego.
+ *
+ * Una Entity representa un objeto en el mundo del juego. Actúa como un contenedor
+ * para componentes y define el ciclo de vida básico (init, update, render, destroy).
+ */
+class Entity {
 public:
+    /**
+     * @brief Constructor por defecto.
+     */
     Entity() = default;
 
     /**
-   * @brief Destructor virtual.
-   */
-    virtual
-        ~Entity() = default;
-
-    /**
-     * @brief Initialize the entity with a device context.
-     * @param deviceContext The device context to initialize with.
-     * @return True if initialization is successful, false otherwise.
-       */
-    virtual void
-        init() = 0;
-
-    /**
-     * @brief M�todo virtual puro para actualizar el componente.
-     * @param deltaTime El tiempo transcurrido desde la �ltima actualizaci�n.
+     * @brief Destructor virtual.
      */
-    virtual void
-        update(float deltaTime, DeviceContext& deviceContext) = 0;
+    virtual ~Entity() = default;
 
     /**
-     * @brief M�todo virtual puro para renderizar el componente.
-     * @param deviceContext Contexto del dispositivo para operaciones gr�ficas.
+     * @brief Inicializa la entidad.
+     * @note Método virtual puro. Debe ser implementado por las clases derivadas.
      */
-    virtual void
-        render(DeviceContext& deviceContext) = 0;
+    virtual void init() = 0;
 
     /**
-     * @brief M�todo virtual puro para destruir el componente.
-     * Libera los recursos asociados al componente.
-       */
-    virtual void
-        destroy() = 0;
+     * @brief Actualiza la lógica de la entidad.
+     *
+     * @param deltaTime     El tiempo transcurrido (en segundos) desde la última actualización.
+     * @param deviceContext Contexto del dispositivo para actualizaciones de subrecursos.
+     */
+    virtual void update(float deltaTime, DeviceContext& deviceContext) = 0;
+
+    /**
+     * @brief Renderiza la entidad.
+     *
+     * @param deviceContext Contexto del dispositivo para operaciones gráficas.
+     */
+    virtual void render(DeviceContext& deviceContext) = 0;
+
+    /**
+     * @brief Libera los recursos asociados a la entidad.
+     *
+     * Método virtual puro para la limpieza manual de memoria o recursos de API.
+     */
+    virtual void destroy() = 0;
 
     /**
      * @brief Agrega un componente a la entidad.
-     * @tparam T Tipo del componente, debe derivar de Component.
-     * @param component Puntero compartido al componente que se va a agregar.
+     *
+     * @tparam T Tipo del componente, debe derivar de la clase @c Component.
+     * @param component Puntero compartido (Shared Pointer) al componente que se va a agregar.
      */
-    template <typename T> void
-        addComponent(EU::TSharedPointer<T> component) {
+    template <typename T>
+    void addComponent(EU::TSharedPointer<T> component) {
         static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
+        // Nota: Se usa .template porque dynamic_pointer_cast es un miembro plantilla dependiente
         m_components.push_back(component.template dynamic_pointer_cast<Component>());
     }
 
     /**
-     * @brief Obtiene un componente de la entidad por su tipo.
+     * @brief Busca y obtiene un componente específico de la entidad.
+     *
      * @tparam T Tipo del componente a obtener.
-     * @return Puntero compartido al componente si se encuentra, nullptr en caso contrario.
-       */
+     * @return Puntero compartido al componente si se encuentra; puntero nulo/vacío en caso contrario.
+     */
     template<typename T>
-    EU::TSharedPointer<T>
-        getComponent() {
+    EU::TSharedPointer<T> getComponent() {
         for (auto& component : m_components) {
             EU::TSharedPointer<T> specificComponent = component.template dynamic_pointer_cast<T>();
             if (specificComponent) {
@@ -71,9 +82,11 @@ public:
         }
         return EU::TSharedPointer<T>();
     }
-private:
+
 protected:
-    bool m_isActive;
-    int m_id;
+    bool m_isActive = true; ///< Indica si la entidad está activa en la escena.
+    int  m_id = -1;         ///< Identificador único de la entidad.
+
+    /// Lista de componentes adjuntos a esta entidad.
     std::vector<EU::TSharedPointer<Component>> m_components;
 };

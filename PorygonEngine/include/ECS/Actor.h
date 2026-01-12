@@ -37,10 +37,13 @@ public:
      */
     Actor(Device& device);
 
+
     /**
      * @brief Destructor virtual.
      */
     virtual ~Actor() = default;
+
+	void awake() override {}
 
     /**
      * @brief Inicializa el actor.

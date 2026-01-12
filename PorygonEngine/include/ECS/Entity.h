@@ -25,6 +25,7 @@ public:
      */
     virtual ~Entity() = default;
 
+	virtual void awake() = 0;
     /**
      * @brief Inicializa la entidad.
      * @note Método virtual puro. Debe ser implementado por las clases derivadas.

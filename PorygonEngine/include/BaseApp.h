@@ -46,6 +46,7 @@ public:
      */
     ~BaseApp() { destroy(); }
 
+    HRESULT awake();
     /**
      * @brief Inicia el bucle principal de mensajes de Windows.
      *

@@ -19,139 +19,96 @@
 
 // --- Includes de Lógica y ECS ---
 #include "Model3D.h"
-#include "UserInterface.h"
 #include "ECS/Actor.h"
+
+// --- CAMBIO: Referencia a la nueva clase GUI ---
+#include "EngineUtilities\GUI/GUI.h"
+
+// --- Handler de ImGui para mensajes de Windows ---
+extern IMGUI_IMPL_API
+LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /**
  * @class BaseApp
- * @brief Clase principal que gestiona el ciclo de vida de la aplicación.
- *
- * Esta clase encapsula la inicialización de la ventana y DirectX, así como
- * el bucle principal (Main Loop) que coordina la actualización (Update) y
- * el renderizado (Render) de la escena.
+ * @brief Clase principal que gestiona el ciclo de vida de la aplicación con soporte para GUI avanzada.
  */
 class BaseApp {
 public:
-    /**
-     * @brief Constructor de la aplicación.
-     *
-     * @param hInst     Instancia de la aplicación (handle de Windows).
-     * @param nCmdShow  Parámetro que indica cómo se debe mostrar la ventana.
-     */
-    BaseApp(HINSTANCE hInst, int nCmdShow);
+	BaseApp() = default;
+	~BaseApp() { destroy(); }
 
-    /**
-     * @brief Destructor.
-     * Llama internamente a destroy() para asegurar la liberación de recursos.
-     */
-    ~BaseApp() { destroy(); }
-
-    HRESULT awake();
-    /**
-     * @brief Inicia el bucle principal de mensajes de Windows.
-     *
-     * @param hInst     Instancia de la aplicación.
-     * @param nCmdShow  Comando de visualización.
-     * @return Código de salida de la aplicación (WPARAM del mensaje WM_QUIT).
-     */
-    int run(HINSTANCE hInst, int nCmdShow);
-
-    /**
-     * @brief Inicializa todos los subsistemas del motor.
-     *
-     * Incluye la creación de la ventana, el dispositivo DirectX, swap chain,
-     * vistas, shaders y la carga inicial de recursos/actores.
-     *
-     * @return S_OK si todo se inicializó correctamente, o un código de error HRESULT.
-     */
-    HRESULT init();
-
-    /**
-     * @brief Actualiza la lógica del juego.
-     *
-     * Se llama una vez por frame. Aquí se calculan transformaciones, física
-     * y lógica de juego.
-     *
-     * @param deltaTime Tiempo transcurrido (en segundos) desde el último frame.
-     */
-    void update(float deltaTime);
-
-    /**
-     * @brief Renderiza la escena actual.
-     *
-     * Limpia las vistas, configura el pipeline, dibuja los actores y presenta
-     * el back buffer (Swap Chain).
-     */
-    void render();
-
-    /**
-     * @brief Libera todos los recursos y memoria al cerrar la aplicación.
-     */
-    void destroy();
+	HRESULT awake();
+	int run(HINSTANCE hInst, int nCmdShow);
+	HRESULT init();
+	void update(float deltaTime);
+	void render();
+	void destroy();
 
 private:
-    /**
-     * @brief Procedimiento de ventana (Callback estático).
-     * Procesa los eventos del sistema operativo (teclado, mouse, cerrar ventana, etc.).
-     */
-    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-    // ------------------------------------------------------------------------
-    // Core DirectX & Window
-    // ------------------------------------------------------------------------
-    Window              m_window;           ///< Abstracción de la ventana de SO.
-    Device              m_device;           ///< Dispositivo gráfico (creación de recursos).
-    DeviceContext       m_deviceContext;    ///< Contexto inmediato (comandos de dibujo).
-    SwapChain           m_swapChain;        ///< Cadena de intercambio (Front/Back buffer).
-    Viewport            m_viewport;         ///< Configuración del área de renderizado.
+	// ------------------------------------------------------------------------
+	// Core DirectX & Window
+	// ------------------------------------------------------------------------
+	Window            m_window;
+	Device            m_device;
+	DeviceContext     m_deviceContext;
+	SwapChain         m_swapChain;
+	Viewport          m_viewport;
 
-    // ------------------------------------------------------------------------
-    // Vistas y Buffers de Renderizado
-    // ------------------------------------------------------------------------
-    Texture             m_backBuffer;       ///< Textura del buffer trasero.
-    RenderTargetView    m_renderTargetView; ///< Vista para dibujar en el Back Buffer.
-    Texture             m_depthStencil;     ///< Textura de profundidad.
-    DepthStencilView    m_depthStencilView; ///< Vista para el buffer de profundidad/stencil.
+	// ------------------------------------------------------------------------
+	// Vistas y Buffers de Renderizado
+	// ------------------------------------------------------------------------
+	Texture           m_backBuffer;
+	RenderTargetView  m_renderTargetView;
+	Texture           m_depthStencil;
+	DepthStencilView  m_depthStencilView;
 
-    // ------------------------------------------------------------------------
-    // Shaders y Estados
-    // ------------------------------------------------------------------------
-    ShaderProgram       m_shaderProgram;    ///< Gestor de Vertex y Pixel Shaders.
-    SamplerState        m_samplerState;     ///< Estado de muestreo para texturas.
+	// ------------------------------------------------------------------------
+	// Shaders y Estados
+	// ------------------------------------------------------------------------
+	ShaderProgram     m_shaderProgram;
+	SamplerState      m_samplerState;
 
-    // ------------------------------------------------------------------------
-    // Constant Buffers (Comunicación CPU -> GPU)
-    // ------------------------------------------------------------------------
-    Buffer              m_cbNeverChanges;       ///< Datos estáticos (ej. View Matrix fija).
-    Buffer              m_cbChangeOnResize;     ///< Datos que cambian al redimensionar (ej. Proyección).
-    Buffer              m_cbChangesEveryFrame;  ///< Datos por frame (ej. World Matrix, Tiempo).
+	// ------------------------------------------------------------------------
+	// Constant Buffers (Comunicación CPU -> GPU)
+	// ------------------------------------------------------------------------
+	Buffer            m_cbNeverChanges;
+	Buffer            m_cbChangeOnResize;
+	Buffer            m_cbChangesEveryFrame;
 
-    // Estructuras de datos locales para los buffers
-    CBNeverChanges      cbNeverChanges;
-    CBChangeOnResize    cbChangesOnResize;
-    CBChangesEveryFrame cb;
+	// Estructuras de datos locales para los buffers
+	CBNeverChanges      cbNeverChanges;
+	CBChangeOnResize    cbChangesOnResize;
+	CBChangesEveryFrame cb;
 
-    // ------------------------------------------------------------------------
-    // Recursos Específicos (CyberGun)
-    // ------------------------------------------------------------------------
-    Texture             m_cyberGunAlbedo;       ///< Textura de color base.
-    Texture             m_cyberGunNormal;       ///< Mapa de normales.
-    Texture             m_cyberGunMetallic;     ///< Mapa metálico (PBR).
-    Texture             m_cyberGunGlossiness;   ///< Mapa de brillo/suavidad (PBR).
+	// ------------------------------------------------------------------------
+	// Recursos Específicos y Actores
+	// ------------------------------------------------------------------------
+	Texture           m_cyberGunAlbedo;
+	// Puedes mantener las otras texturas PBR si tu init las requiere:
+	Texture           m_cyberGunNormal;
+	Texture           m_cyberGunMetallic;
+	Texture           m_cyberGunGlossiness;
 
-    EU::TSharedPointer<Actor> m_cyberGun;       ///< Puntero inteligente al actor principal.
+	EU::TSharedPointer<Actor> m_cyberGun;
+	std::vector<EU::TSharedPointer<Actor>> m_actors;
+	Model3D* m_model;
 
-    // ------------------------------------------------------------------------
-    // Escena y Lógica Global
-    // ------------------------------------------------------------------------
-    std::vector<EU::TSharedPointer<Actor>> m_actors; ///< Lista de actores en la escena.
-    Model3D* m_model;                ///< Recurso del modelo 3D cargado.
-    UserInterface       UI;                     ///< Sistema de interfaz de usuario (ImGui, etc.).
+	// ------------------------------------------------------------------------
+	// Matrices Globales (Necesarias para ImGuizmo)
+	// ------------------------------------------------------------------------
+	XMMATRIX            m_View;
+	XMMATRIX            m_Projection;
+	// XMMATRIX         m_World; // Opcional según tu lógica
+	// XMFLOAT4         m_vMeshColor; // Opcional
 
-    // Matrices Globales
-    XMMATRIX            m_World;        ///< Matriz de Mundo global.
-    XMMATRIX            m_View;         ///< Matriz de Vista (Cámara).
-    XMMATRIX            m_Projection;   ///< Matriz de Proyección.
-    XMFLOAT4            m_vMeshColor;   ///< Color base para mallas (debug/tint).
+	// ------------------------------------------------------------------------
+	// CAMBIO: Sistema de Interfaz (GUI)
+	// ------------------------------------------------------------------------
+	/**
+	 * @brief Objeto que gestiona la interfaz de usuario y herramientas de edición.
+	 */
+	GUI               m_gui;
 };

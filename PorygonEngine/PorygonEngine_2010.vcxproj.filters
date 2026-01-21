@@ -45,6 +45,9 @@
     <Filter Include="Imgui\Src">
       <UniqueIdentifier>{235837ac-ac5e-4885-b6be-26beef0d77d6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\SceneGraph">
+      <UniqueIdentifier>{55f092a7-4bf4-4098-9b0a-f28bd9c29ffd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PorygonEngine.cpp">
@@ -255,6 +258,9 @@
     </ClInclude>
     <ClInclude Include="Imgui\imgui-docking-znly-docking\backends\imgui_impl_win32.h">
       <Filter>Imgui\Src</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SceneGraph\HierarchyComponent.h">
+      <Filter>Include\SceneGraph</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

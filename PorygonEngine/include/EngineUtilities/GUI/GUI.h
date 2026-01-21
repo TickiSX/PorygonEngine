@@ -7,74 +7,67 @@
 #include "imgui_impl_dx11.h"
 #include "ImGuizmo.h"
 
+// Forward Declarations
+class Viewport;
 class Window;
 class Device;
 class DeviceContext;
 class Actor;
 
-class 
-GUI {
+class GUI {
 public:
-	GUI()  = default;
-	~GUI() = default;
+    GUI() = default;
+    ~GUI() = default;
 
-  void 
-  awake();
+    void awake();
 
-	void 
-  init(Window& window, Device& device, DeviceContext& deviceContext);
+    void init(Window& window, Device& device, DeviceContext& deviceContext);
 
-  void 
-  update(Window& window);
-  
-  void 
-  render();
-  
-  void 
-  destroy();
+    // Actualizado: requiere Viewport
+    void update(Viewport& viewport, Window& window);
 
-  void 
-  ToolBar();
+    void render();
 
-  
-  void 
-  closeApp();
+    void destroy();
 
-  void
-  toolTipData();
+    void ToolBar();
 
-  void
-  appleLiquidStyle(float opacity /*0..1f*/, ImVec4 accent /*=#0A84FF*/);
+    void closeApp();
 
-  void
-  vec3Control(const std::string& label,
-              float* values,
-              float resetValues = 0.0f,
-              float columnWidth = 100.0f);
+    void toolTipData();
 
-  void
-  inspectorGeneral(EU::TSharedPointer<Actor> actor);
+    void appleLiquidStyle(float opacity /*0..1f*/, ImVec4 accent /*=#0A84FF*/);
 
-  void
-  inspectorContainer(EU::TSharedPointer<Actor> actor);
+    void vec3Control(const std::string& label,
+        float* values,
+        float resetValues = 0.0f,
+        float columnWidth = 100.0f);
 
-  void
-  outliner(const std::vector<EU::TSharedPointer<Actor>>& actors);
+    void inspectorGeneral(EU::TSharedPointer<Actor> actor);
 
-  void 
-  editTransform(const XMMATRIX& view, const XMMATRIX& projection, EU::TSharedPointer<Actor> actor);
+    void inspectorContainer(EU::TSharedPointer<Actor> actor);
 
-  void 
-  drawGizmoToolbar();
+    void outliner(const std::vector<EU::TSharedPointer<Actor>>& actors);
+
+    void editTransform(const XMMATRIX& view, const XMMATRIX& projection, EU::TSharedPointer<Actor> actor);
+
+    void drawGizmoToolbar();
+
+    // Función auxiliar para convertir XMMATRIX a formato float array para ImGuizmo
+    void ToFloatArray(const XMMATRIX& mat, float* dest) {
+        XMFLOAT4X4 temp;
+        XMStoreFloat4x4(&temp, mat);
+        memcpy(dest, &temp, sizeof(float) * 16);
+    }
+
 private:
-  bool checkboxValue = true;
-  bool checkboxValue2 = false;
-  std::vector<const char*> m_objectsNames;
-  std::vector<const char*> m_tooltips;
+    bool checkboxValue = true;
+    bool checkboxValue2 = false;
+    std::vector<const char*> m_objectsNames;
+    std::vector<const char*> m_tooltips;
 
-  bool show_exit_popup = false; // Variable de estado para el popup
-
+    bool show_exit_popup = false; // Variable de estado para el popup
 
 public:
-  int selectedActorIndex = -1;
+    int selectedActorIndex = -1;
 };

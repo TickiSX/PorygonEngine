@@ -5,7 +5,9 @@ HRESULT
 BaseApp::awake() {
     HRESULT hr = S_OK;
 
-    // Inicialización de elementos externos al motor
+    // Inicializacion de dlls y elementos externos al motor.
+
+    // Log Success Message
     MESSAGE("Main", "Awake", "Application awake successfully.");
     return hr;
 }
@@ -17,20 +19,17 @@ BaseApp::run(HINSTANCE hInst, int nCmdShow) {
         ERROR("Main", "Run", "Failed to initialize window.");
         return 0;
     }
-
     // 2) Awake Application
     if (FAILED(awake())) {
         ERROR("Main", "Run", "Failed to awake application.");
         return 0;
     }
-
     // 3) Initialize Device and Device Context
     if (FAILED(init())) {
         ERROR("Main", "Run", "Failed to initialize device and device context.");
         return 0;
     }
-
-    // 4) Initialize GUI (Usando m_gui y pasando m_window)
+    // 4) Initialize GUI
     m_gui.init(m_window, m_device, m_deviceContext);
 
     // Main message loop
@@ -38,7 +37,6 @@ BaseApp::run(HINSTANCE hInst, int nCmdShow) {
     LARGE_INTEGER freq, prev;
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&prev);
-
     while (WM_QUIT != msg.message)
     {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -63,57 +61,88 @@ HRESULT
 BaseApp::init() {
     HRESULT hr = S_OK;
 
-    // --- Core Pipeline ---
+    // Crear swapchain
     hr = m_swapChain.init(m_device, m_deviceContext, m_backBuffer, m_window);
+
     if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize SwapChain. HRESULT: " + std::to_string(hr)).c_str());
+        ERROR("Main", "InitDevice",
+            ("Failed to initialize SwapChain. HRESULT: " + std::to_string(hr)).c_str());
         return hr;
     }
 
+    // Crear render target view
     hr = m_renderTargetView.init(m_device, m_backBuffer, DXGI_FORMAT_R8G8B8A8_UNORM);
+
     if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize RenderTargetView. HRESULT: " + std::to_string(hr)).c_str());
+        ERROR("Main", "InitDevice",
+            ("Failed to initialize RenderTargetView. HRESULT: " + std::to_string(hr)).c_str());
         return hr;
     }
 
-    hr = m_depthStencil.init(m_device, m_window.m_width, m_window.m_height, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_DEPTH_STENCIL, 4, 0);
+    // Crear textura de depth stencil
+    hr = m_depthStencil.init(m_device,
+        m_window.m_width,
+        m_window.m_height,
+        DXGI_FORMAT_D24_UNORM_S8_UINT,
+        D3D11_BIND_DEPTH_STENCIL,
+        4,
+        0);
+
     if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize DepthStencil. HRESULT: " + std::to_string(hr)).c_str());
+        ERROR("Main", "InitDevice",
+            ("Failed to initialize DepthStencil. HRESULT: " + std::to_string(hr)).c_str());
         return hr;
     }
 
-    hr = m_depthStencilView.init(m_device, m_depthStencil, DXGI_FORMAT_D24_UNORM_S8_UINT);
+    // Crear el depth stencil view
+    hr = m_depthStencilView.init(m_device,
+        m_depthStencil,
+        DXGI_FORMAT_D24_UNORM_S8_UINT);
+
     if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize DepthStencilView. HRESULT: " + std::to_string(hr)).c_str());
+        ERROR("Main", "InitDevice",
+            ("Failed to initialize DepthStencilView. HRESULT: " + std::to_string(hr)).c_str());
         return hr;
     }
 
+
+    // Crear el m_viewport
     hr = m_viewport.init(m_window);
+
     if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize Viewport. HRESULT: " + std::to_string(hr)).c_str());
+        ERROR("Main", "InitDevice",
+            ("Failed to initialize Viewport. HRESULT: " + std::to_string(hr)).c_str());
         return hr;
     }
 
-    // --- CARGA DE RECURSOS (Actor CyberGun) ---
+    // Load Resources -> Modelos, Texturas e Interfaz de usuario
+
+    // --- CARGA DE RECURSOS (Actor MA5C) ---
+    // Usamos el MA5C original pero con la estructura del segundo codigo
     m_cyberGun = EU::MakeShared<Actor>(m_device);
+
     if (!m_cyberGun.isNull()) {
-        m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX);
-        std::vector<MeshComponent> cyberGunMeshes = m_model->GetMeshes();
+        // Crear vertex buffer y index buffer para el MA5C
+        std::vector<MeshComponent> cyberGunMeshes;
+        m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX); // Restaurado MA5C
+        cyberGunMeshes = m_model->GetMeshes();
 
         std::vector<Texture> cyberGunTextures;
-        hr = m_cyberGunAlbedo.init(m_device, "Assets/MA5C_2K_Color", ExtensionType::PNG);
+        hr = m_cyberGunAlbedo.init(m_device, "Assets/MA5C_2K_Color", ExtensionType::PNG); // Restaurado Textura MA5C
+        // Load the Texture
         if (FAILED(hr)) {
-            ERROR("Main", "InitDevice", "Failed to initialize cyberGunAlbedo.");
+            ERROR("Main", "InitDevice",
+                ("Failed to initialize cyberGunAlbedo. HRESULT: " + std::to_string(hr)).c_str());
             return hr;
         }
         cyberGunTextures.push_back(m_cyberGunAlbedo);
 
         m_cyberGun->setMesh(m_device, cyberGunMeshes);
         m_cyberGun->setTextures(cyberGunTextures);
-        m_cyberGun->setName("CyberGun");
+        m_cyberGun->setName("CyberGun"); // Mantenemos nombre interno pero es el MA5C
         m_actors.push_back(m_cyberGun);
 
-        // Transformación inicial
+        // Transformación inicial (Restaurada la original 0,0,0)
         m_cyberGun->getComponent<Transform>()->setTransform(
             EU::Vector3(0.0f, 0.0f, 0.0f),
             EU::Vector3(0.0f, 0.0f, 0.0f),
@@ -125,87 +154,164 @@ BaseApp::init() {
         return E_FAIL;
     }
 
-    // --- SHADERS Y LAYOUT ---
-    std::vector<D3D11_INPUT_ELEMENT_DESC> Layout = {
-        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
-    };
+    // Define the input layout
+    // NOTA: He añadido NORMAL de vuelta porque PorygonEngine lo necesita, 
+    // pero manteniendo el estilo verboso del 2do código.
+    std::vector<D3D11_INPUT_ELEMENT_DESC> Layout;
 
+    D3D11_INPUT_ELEMENT_DESC position;
+    position.SemanticName = "POSITION";
+    position.SemanticIndex = 0;
+    position.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+    position.InputSlot = 0;
+    position.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+    position.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+    position.InstanceDataStepRate = 0;
+    Layout.push_back(position);
+
+    D3D11_INPUT_ELEMENT_DESC texcoord;
+    texcoord.SemanticName = "TEXCOORD";
+    texcoord.SemanticIndex = 0;
+    texcoord.Format = DXGI_FORMAT_R32G32_FLOAT;
+    texcoord.InputSlot = 0;
+    texcoord.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+    texcoord.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+    texcoord.InstanceDataStepRate = 0;
+    Layout.push_back(texcoord);
+
+    // Añadido NORMAL porque PorygonEngine lo usaba en el código original
+    D3D11_INPUT_ELEMENT_DESC normal;
+    normal.SemanticName = "NORMAL";
+    normal.SemanticIndex = 0;
+    normal.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+    normal.InputSlot = 0;
+    normal.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+    normal.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+    normal.InstanceDataStepRate = 0;
+    Layout.push_back(normal);
+
+    // Create the Shader Program
+    // Restaurado PorygonEngine.fx
     hr = m_shaderProgram.init(m_device, "PorygonEngine.fx", Layout);
-    if (FAILED(hr)) return hr;
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice",
+            ("Failed to initialize ShaderProgram. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
 
+    // Create the constant buffers
     hr = m_cbNeverChanges.init(m_device, sizeof(CBNeverChanges));
-    hr = m_cbChangeOnResize.init(m_device, sizeof(CBChangeOnResize));
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice",
+            ("Failed to initialize NeverChanges Buffer. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
 
-    // --- CÁMARA ---
+    hr = m_cbChangeOnResize.init(m_device, sizeof(CBChangeOnResize));
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice",
+            ("Failed to initialize ChangeOnResize Buffer. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    // Initialize the view matrix (Restaurada la cámara original que mira al 0,0,0)
     XMVECTOR Eye = XMVectorSet(0.0f, 1.5f, -3.0f, 0.0f);
     XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
     XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
     m_View = XMMatrixLookAtLH(Eye, At, Up);
 
+
+    // Initialize the projection matrix
+    cbNeverChanges.mView = XMMatrixTranspose(m_View);
     m_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, m_window.m_width / (FLOAT)m_window.m_height, 0.01f, 100.0f);
+    cbChangesOnResize.mProjection = XMMatrixTranspose(m_Projection);
 
     return S_OK;
 }
 
-void BaseApp::update(float deltaTime) {
-    // 1. Update Time
+void BaseApp::update(float deltaTime)
+{
+    // Update our time (Lógica actualizada del 2do código)
     static float t = 0.0f;
-    static DWORD dwTimeStart = 0;
-    DWORD dwTimeCur = GetTickCount();
-    if (dwTimeStart == 0) dwTimeStart = dwTimeCur;
-    t = (dwTimeCur - dwTimeStart) / 1000.0f;
-
-    // 2. GUI Update & Logic
-    m_gui.update(m_window);
-
-    // Solo procesamos UI si hay actores
-    if (!m_actors.empty()) {
-        m_gui.outliner(m_actors);
-        m_gui.inspectorGeneral(m_actors[m_gui.selectedActorIndex]);
-
-        // ImGuizmo se llama dentro de la lógica de update (o antes del render de UI)
-        m_gui.editTransform(m_View, m_Projection, m_actors[m_gui.selectedActorIndex]);
+    if (m_swapChain.m_driverType == D3D_DRIVER_TYPE_REFERENCE)
+    {
+        t += (float)XM_PI * 0.0125f;
+    }
+    else
+    {
+        static DWORD dwTimeStart = 0;
+        DWORD dwTimeCur = GetTickCount();
+        if (dwTimeStart == 0)
+            dwTimeStart = dwTimeCur;
+        t = (dwTimeCur - dwTimeStart) / 1000.0f;
     }
 
-    // 3. Update Constant Buffers
+    // Update User Interface (Usando la firma actualizada con m_viewport del 2do código)
+    m_gui.update(m_viewport, m_window);
+
+    // Demo window comentada como en el 2do código
+    bool show_demo_window = true;
+    //ImGui::ShowDemoWindow(&show_demo_window);
+
+    if (!m_actors.empty()) {
+        m_gui.inspectorGeneral(m_actors[m_gui.selectedActorIndex]);
+        m_gui.outliner(m_actors);
+    }
+
+    // Actualizar la matriz de proyección y vista
     cbNeverChanges.mView = XMMatrixTranspose(m_View);
     m_cbNeverChanges.update(m_deviceContext, nullptr, 0, nullptr, &cbNeverChanges, 0, 0);
-
     m_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, m_window.m_width / (FLOAT)m_window.m_height, 0.01f, 100.0f);
     cbChangesOnResize.mProjection = XMMatrixTranspose(m_Projection);
     m_cbChangeOnResize.update(m_deviceContext, nullptr, 0, nullptr, &cbChangesOnResize, 0, 0);
 
-    // 4. Update Actors
+
+    // Update Actors
     for (auto& actor : m_actors) {
         actor->update(deltaTime, m_deviceContext);
     }
+
+    // EditTransform (Gizmo) al final, como en el 2do código
+    if (!m_actors.empty()) {
+        m_gui.editTransform(m_View, m_Projection, m_actors[m_gui.selectedActorIndex]);
+    }
 }
 
-void BaseApp::render() {
+void
+BaseApp::render() {
+    // Set Render Target View
     float ClearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
     m_renderTargetView.render(m_deviceContext, m_depthStencilView, 1, ClearColor);
 
+    // Set Viewport
     m_viewport.render(m_deviceContext);
+
+    // Set depth stencil view
     m_depthStencilView.render(m_deviceContext);
+
+    // Set shader program
     m_shaderProgram.render(m_deviceContext);
 
+    // Asignar buffers constantes
     m_cbNeverChanges.render(m_deviceContext, 0, 1);
     m_cbChangeOnResize.render(m_deviceContext, 1, 1);
 
+    // Render all actors
     for (auto& actor : m_actors) {
         actor->render(m_deviceContext);
     }
 
-    // Render UI final
+    // Render UI
     m_gui.render();
 
+    // Present our back buffer to our front buffer
     m_swapChain.present();
 }
 
-void BaseApp::destroy() {
+void
+BaseApp::destroy() {
     if (m_deviceContext.m_deviceContext) m_deviceContext.m_deviceContext->ClearState();
+    // Añadido borrado de modelo del 1er código por seguridad
     if (m_model) delete m_model;
 
     m_cbNeverChanges.destroy();
@@ -216,26 +322,32 @@ void BaseApp::destroy() {
     m_renderTargetView.destroy();
     m_swapChain.destroy();
     m_backBuffer.destroy();
-
     m_gui.destroy();
     m_deviceContext.destroy();
     m_device.destroy();
 }
 
-LRESULT BaseApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+LRESULT
+BaseApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam)) {
         return true;
+    }
 
-    switch (message) {
-    case WM_CREATE: {
+    switch (message)
+    {
+    case WM_CREATE:
+    {
         CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
         SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)pCreate->lpCreateParams);
-    } return 0;
-    case WM_PAINT: {
+    }
+    return 0;
+    case WM_PAINT:
+    {
         PAINTSTRUCT ps;
         BeginPaint(hWnd, &ps);
         EndPaint(hWnd, &ps);
-    } return 0;
+    }
+    return 0;
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;

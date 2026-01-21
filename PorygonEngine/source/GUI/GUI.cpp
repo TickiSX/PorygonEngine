@@ -1,24 +1,26 @@
 #include "EngineUtilities\GUI\GUI.h"
+#include "Viewport.h"
 #include "Window.h"
 #include "Device.h"
 #include "DeviceContext.h"
 #include "MeshComponent.h"
 #include "ECS\Actor.h"
-#include "ImGuizmo.h"
 
 // Variable estática para la operación actual del Gizmo
 static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 
-void
-GUI::init(Window& window, Device& device, DeviceContext& deviceContext) {
+void GUI::init(Window& window, Device& device, DeviceContext& deviceContext) {
+    // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 
+    // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     ImGuiStyle& style = ImGui::GetStyle();
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
@@ -28,34 +30,40 @@ GUI::init(Window& window, Device& device, DeviceContext& deviceContext) {
 
     appleLiquidStyle(0.72f, ImVec4(0.0f, 0.515f, 1.0f, 1.0f));
 
+    // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(window.m_hWnd);
     ImGui_ImplDX11_Init(device.m_device, deviceContext.m_deviceContext);
 
+    // Init ToolTips
     toolTipData();
+
     selectedActorIndex = 0;
 }
 
-void
-GUI::update(Window& window) {
+void GUI::update(Viewport& viewport, Window& window) {
+    // Start the Dear ImGui frame
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
     ImGuizmo::BeginFrame();
+    ImGuiIO& io = ImGui::GetIO();
+
     ImGuizmo::SetOrthographic(false);
     ImGuizmo::SetRect(0, 0, (float)window.m_width, (float)window.m_height);
 
+    // In Program always
     ToolBar();
     closeApp();
     drawGizmoToolbar();
 }
 
-void
-GUI::render() {
+void GUI::render() {
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
     ImGuiIO& io = ImGui::GetIO();
+    // Update and Render additional Platform Windows
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         ImGui::UpdatePlatformWindows();
@@ -63,15 +71,17 @@ GUI::render() {
     }
 }
 
-void
-GUI::destroy() {
+void GUI::destroy() {
+    // Cleanup
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 }
 
-void
-GUI::vec3Control(const std::string& label, float* values, float resetValue, float columnWidth) {
+void GUI::vec3Control(const std::string& label, float* values, float resetValue, float columnWidth) {
+    ImGuiIO& io = ImGui::GetIO();
+    ImFont* boldFont = io.Fonts->Fonts[0];
+
     ImGui::PushID(label.c_str());
 
     ImGui::Columns(2);
@@ -82,215 +92,369 @@ GUI::vec3Control(const std::string& label, float* values, float resetValue, floa
     ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 
+    // --- CORRECCIÓN DEL ERROR FONTSIZE ---
     float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
     ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
 
-    // X
+    // Eje X
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+    // ImGui::PushFont(boldFont); // Opcional si tienes fuente negrita
     if (ImGui::Button("X", buttonSize)) values[0] = resetValue;
-    ImGui::PopStyleColor();
+    // ImGui::PopFont();
+    ImGui::PopStyleColor(3);
+
     ImGui::SameLine();
-    ImGui::DragFloat("##X", &values[0], 0.1f);
+    ImGui::DragFloat("##X", &values[0], 0.1f, 0.0f, 0.0f, "%.2f");
     ImGui::PopItemWidth();
     ImGui::SameLine();
 
-    // Y
+    // Eje Y
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
     if (ImGui::Button("Y", buttonSize)) values[1] = resetValue;
-    ImGui::PopStyleColor();
+    ImGui::PopStyleColor(3);
+
     ImGui::SameLine();
-    ImGui::DragFloat("##Y", &values[1], 0.1f);
+    ImGui::DragFloat("##Y", &values[1], 0.1f, 0.0f, 0.0f, "%.2f");
     ImGui::PopItemWidth();
     ImGui::SameLine();
 
-    // Z
+    // Eje Z
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
     if (ImGui::Button("Z", buttonSize)) values[2] = resetValue;
-    ImGui::PopStyleColor();
+    ImGui::PopStyleColor(3);
+
     ImGui::SameLine();
-    ImGui::DragFloat("##Z", &values[2], 0.1f);
+    ImGui::DragFloat("##Z", &values[2], 0.1f, 0.0f, 0.0f, "%.2f");
     ImGui::PopItemWidth();
 
     ImGui::PopStyleVar();
     ImGui::Columns(1);
+
     ImGui::PopID();
 }
 
-void GUI::toolTipData() {}
+void GUI::toolTipData() {
+}
 
-void
-GUI::appleLiquidStyle(float opacity, ImVec4 accent) {
+void GUI::appleLiquidStyle(float opacity, ImVec4 accent) {
     ImGuiStyle& style = ImGui::GetStyle();
     ImVec4* colors = style.Colors;
 
     style.WindowRounding = 14.0f;
+    style.ChildRounding = 14.0f;
+    style.PopupRounding = 14.0f;
     style.FrameRounding = 10.0f;
+    style.GrabRounding = 10.0f;
+    style.ScrollbarRounding = 12.0f;
+    style.TabRounding = 10.0f;
+
     style.WindowBorderSize = 1.0f;
+    style.FrameBorderSize = 0.0f;
+    style.PopupBorderSize = 1.0f;
+    style.TabBorderSize = 0.0f;
+
     style.WindowPadding = ImVec2(14, 12);
+    style.FramePadding = ImVec2(12, 8);
+    style.ItemSpacing = ImVec2(8, 8);
+    style.ItemInnerSpacing = ImVec2(8, 6);
 
     const float o = opacity;
-    colors[ImGuiCol_Text] = ImVec4(1, 1, 1, 0.95f);
-    colors[ImGuiCol_WindowBg] = ImVec4(0.16f, 0.16f, 0.18f, o);
+    const ImVec4 txt = ImVec4(1, 1, 1, 0.95f);
+    const ImVec4 pane = ImVec4(0.16f, 0.16f, 0.18f, o);
+    const ImVec4 paneHi = ImVec4(0.20f, 0.20f, 0.22f, o);
+    const ImVec4 paneLo = ImVec4(0.13f, 0.13f, 0.15f, o * 0.85f);
+
+    colors[ImGuiCol_Text] = txt;
+    colors[ImGuiCol_TextDisabled] = ImVec4(1, 1, 1, 0.45f);
+    colors[ImGuiCol_WindowBg] = pane;
+    colors[ImGuiCol_ChildBg] = paneLo;
+    colors[ImGuiCol_PopupBg] = paneHi;
     colors[ImGuiCol_Border] = ImVec4(1, 1, 1, 0.10f);
-    colors[ImGuiCol_FrameBg] = ImVec4(0.13f, 0.13f, 0.15f, o);
+    colors[ImGuiCol_BorderShadow] = ImVec4(0, 0, 0, 0.0f);
+    colors[ImGuiCol_FrameBg] = paneLo;
+    colors[ImGuiCol_FrameBgHovered] = pane;
+    colors[ImGuiCol_FrameBgActive] = paneHi;
+    colors[ImGuiCol_TitleBg] = pane;
+    colors[ImGuiCol_TitleBgActive] = paneHi;
+    colors[ImGuiCol_TitleBgCollapsed] = paneLo;
+    colors[ImGuiCol_MenuBarBg] = pane;
+    colors[ImGuiCol_ScrollbarBg] = ImVec4(0, 0, 0, 0.0f);
+    colors[ImGuiCol_ScrollbarGrab] = ImVec4(1, 1, 1, 0.10f);
+    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(1, 1, 1, 0.18f);
+    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(1, 1, 1, 0.26f);
     colors[ImGuiCol_CheckMark] = accent;
     colors[ImGuiCol_SliderGrab] = accent;
-    colors[ImGuiCol_Button] = ImVec4(1, 1, 1, 0.05f);
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(accent.x, accent.y, accent.z, 1.0f);
+    colors[ImGuiCol_Button] = paneLo;
+    colors[ImGuiCol_ButtonHovered] = pane;
+    colors[ImGuiCol_ButtonActive] = paneHi;
+    colors[ImGuiCol_Header] = paneLo;
+    colors[ImGuiCol_HeaderHovered] = pane;
+    colors[ImGuiCol_HeaderActive] = paneHi;
+    colors[ImGuiCol_Separator] = ImVec4(1, 1, 1, 0.10f);
+    colors[ImGuiCol_SeparatorHovered] = ImVec4(1, 1, 1, 0.18f);
+    colors[ImGuiCol_SeparatorActive] = ImVec4(1, 1, 1, 0.30f);
+    colors[ImGuiCol_Tab] = paneLo;
+    colors[ImGuiCol_TabHovered] = pane;
+    colors[ImGuiCol_TabActive] = paneHi;
+    colors[ImGuiCol_TabUnfocused] = paneLo;
+    colors[ImGuiCol_TabUnfocusedActive] = pane;
+    colors[ImGuiCol_DockingPreview] = ImVec4(accent.x, accent.y, accent.z, 0.35f);
+    colors[ImGuiCol_DockingEmptyBg] = ImVec4(0, 0, 0, 0.0f);
+    colors[ImGuiCol_TableHeaderBg] = pane;
+    colors[ImGuiCol_TableBorderStrong] = ImVec4(1, 1, 1, 0.08f);
+    colors[ImGuiCol_TableBorderLight] = ImVec4(1, 1, 1, 0.04f);
+    colors[ImGuiCol_TableRowBg] = ImVec4(1, 1, 1, 0.03f);
+    colors[ImGuiCol_TableRowBgAlt] = ImVec4(1, 1, 1, 0.06f);
+    colors[ImGuiCol_TextSelectedBg] = ImVec4(accent.x, accent.y, accent.z, 0.35f);
+    colors[ImGuiCol_NavHighlight] = ImVec4(accent.x, accent.y, accent.z, 0.50f);
+    colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1, 1, 1, 0.30f);
+    colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0, 0, 0, 0.20f);
+    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0, 0, 0, 0.35f);
 }
 
-void
-GUI::ToolBar() {
+void GUI::ToolBar() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Exit")) { show_exit_popup = true; }
+            if (ImGui::MenuItem("New")) {}
+            if (ImGui::MenuItem("Open")) {}
+            if (ImGui::MenuItem("Save")) {}
+            if (ImGui::MenuItem("Exit")) {
+                show_exit_popup = true;
+                ImGui::OpenPopup("Exit?");
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Edit")) {
+            if (ImGui::MenuItem("Undo")) {}
+            if (ImGui::MenuItem("Redo")) {}
+            if (ImGui::MenuItem("Cut")) {}
+            if (ImGui::MenuItem("Copy")) {}
+            if (ImGui::MenuItem("Paste")) {}
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Tools")) {
+            if (ImGui::MenuItem("Options")) {}
+            if (ImGui::MenuItem("Settings")) {}
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
     }
 }
 
-void
-GUI::closeApp() {
+void GUI::closeApp() {
     if (show_exit_popup) {
         ImGui::OpenPopup("Exit?");
         show_exit_popup = false;
     }
-
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
     if (ImGui::BeginPopupModal("Exit?", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Estas a punto de salir de la aplicacion.\nEstas seguro?\n\n");
-        if (ImGui::Button("OK", ImVec2(120, 0))) { exit(0); }
+        ImGui::Separator();
+
+        if (ImGui::Button("OK", ImVec2(120, 0))) {
+            exit(0);
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SetItemDefaultFocus();
         ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
         ImGui::EndPopup();
     }
 }
 
-void
-GUI::inspectorGeneral(EU::TSharedPointer<Actor> actor) {
-    if (actor.isNull()) return;
-
+void GUI::inspectorGeneral(EU::TSharedPointer<Actor> actor) {
     ImGui::Begin("Inspector");
-
     bool isStatic = false;
     ImGui::Checkbox("##Static", &isStatic);
     ImGui::SameLine();
 
-    float availWidth = ImGui::GetContentRegionAvail().x;
-    ImGui::SetNextItemWidth(availWidth * 0.6f);
-
-    std::string name = actor->getName();
-    char buf[128];
-    strcpy_s(buf, name.c_str());
-    if (ImGui::InputText("##ObjectName", buf, 128)) {
-        actor->setName(buf);
+    char objectName[128] = "Cube";
+    if (actor) {
+        strcpy_s(objectName, actor->getName().c_str());
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
+        if (ImGui::InputText("##ObjectName", objectName, IM_ARRAYSIZE(objectName))) {
+            actor->setName(objectName);
+        }
     }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Icon")) {}
 
     ImGui::Separator();
 
+    const char* tags[] = { "Untagged", "Player", "Enemy", "Environment" };
+    static int currentTag = 0;
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+    ImGui::Combo("Tag", &currentTag, tags, IM_ARRAYSIZE(tags));
+    ImGui::SameLine();
+
+    const char* layers[] = { "Default", "TransparentFX", "Ignore Raycast", "Water", "UI" };
+    static int currentLayer = 0;
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+    ImGui::Combo("Layer", &currentLayer, layers, IM_ARRAYSIZE(layers));
+
+    ImGui::Separator();
     if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
         inspectorContainer(actor);
     }
     ImGui::End();
 }
 
-void
-GUI::inspectorContainer(EU::TSharedPointer<Actor> actor) {
-    auto transform = actor->getComponent<Transform>();
-    if (transform) {
-        // Obtenemos los datos del transform (X, Y, Z)
-        vec3Control("Position", (float*)&transform->getPosition(), 0.0f);
-        vec3Control("Rotation", (float*)&transform->getRotation(), 0.0f);
-        vec3Control("Scale", (float*)&transform->getScale(), 1.0f);
+void GUI::inspectorContainer(EU::TSharedPointer<Actor> actor) {
+    if (actor) {
+        auto transform = actor->getComponent<Transform>();
+        if (transform) {
+            vec3Control("Position", const_cast<float*>(transform->getPosition().data()));
+            vec3Control("Rotation", const_cast<float*>(transform->getRotation().data()));
+            vec3Control("Scale", const_cast<float*>(transform->getScale().data()));
+        }
     }
 }
 
-void
-GUI::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
+void GUI::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
     ImGui::Begin("Hierarchy");
 
     static ImGuiTextFilter filter;
     filter.Draw("Search...", 180.0f);
+
     ImGui::Separator();
 
-    for (int i = 0; i < (int)actors.size(); ++i) {
-        if (actors[i].isNull()) continue;
+    for (int i = 0; i < actors.size(); ++i) {
+        const auto& actor = actors[i];
+        std::string actorName = actor ? actor->getName() : "Actor";
 
-        std::string name = actors[i]->getName();
-        if (!filter.PassFilter(name.c_str())) continue;
+        if (!filter.PassFilter(actorName.c_str())) {
+            continue;
+        }
 
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Leaf;
-        if (selectedActorIndex == i) flags |= ImGuiTreeNodeFlags_Selected;
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+        if (selectedActorIndex == i)
+            flags |= ImGuiTreeNodeFlags_Selected;
 
-        if (ImGui::TreeNodeEx((void*)(intptr_t)i, flags, "%s", name.c_str())) {
-            if (ImGui::IsItemClicked()) selectedActorIndex = i;
+        bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)i, flags, "%s", actorName.c_str());
+
+        if (ImGui::IsItemClicked()) {
+            selectedActorIndex = i;
+        }
+
+        if (nodeOpen) {
+            if (actor && actor->getComponent<Transform>()) {
+                auto pos = actor->getComponent<Transform>()->getPosition();
+                ImGui::Text("Position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
+            }
             ImGui::TreePop();
         }
     }
     ImGui::End();
 }
 
-void
-GUI::editTransform(const XMMATRIX& view, const XMMATRIX& projection, EU::TSharedPointer<Actor> actor)
+void GUI::editTransform(const XMMATRIX& view, const XMMATRIX& projection, EU::TSharedPointer<Actor> actor)
 {
+    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
     if (actor.isNull()) return;
+
     auto transform = actor->getComponent<Transform>();
     if (!transform) return;
 
-    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+    float* pos = const_cast<float*>(transform->getPosition().data());
+    float* rot = const_cast<float*>(transform->getRotation().data());
+    float* sca = const_cast<float*>(transform->getScale().data());
 
-    // 1. Obtener datos actuales del transform
-    EU::Vector3 pos = transform->getPosition();
-    EU::Vector3 rot = transform->getRotation();
-    EU::Vector3 sca = transform->getScale();
-
-    // 2. Crear una matriz temporal compatible con ImGuizmo a partir de los vectores
     float mArr[16];
-    ImGuizmo::RecomposeMatrixFromComponents(&pos.x, &rot.x, &sca.x, mArr);
+    ImGuizmo::RecomposeMatrixFromComponents(pos, rot, sca, mArr);
 
-    // 3. Preparar matrices de Cámara (View y Projection)
     float vArr[16], pArr[16];
-    XMStoreFloat4x4((XMFLOAT4X4*)vArr, view);
-    XMStoreFloat4x4((XMFLOAT4X4*)pArr, projection);
+    ToFloatArray(view, vArr);
+    ToFloatArray(projection, pArr);
 
-    // 4. Manipular el Gizmo
-    if (ImGuizmo::Manipulate(vArr, pArr, mCurrentGizmoOperation, mCurrentGizmoMode, mArr)) {
-        // 5. Descomponer la matriz resultante de vuelta a vectores
+    ImGuizmo::SetID(0);
+    ImGuizmo::AllowAxisFlip(false);
+
+    float snapValue = 0.5f;
+    if (mCurrentGizmoOperation == ImGuizmo::ROTATE) snapValue = 45.0f;
+
+    float snap[3] = { snapValue, snapValue, snapValue };
+    bool useSnap = ImGui::GetIO().KeyCtrl;
+
+    ImGuizmo::Manipulate(
+        vArr, pArr,
+        mCurrentGizmoOperation,
+        mCurrentGizmoMode,
+        mArr,
+        NULL,
+        useSnap ? snap : NULL
+    );
+
+    if (ImGuizmo::IsUsing()) {
         float newPos[3], newRot[3], newSca[3];
         ImGuizmo::DecomposeMatrixToComponents(mArr, newPos, newRot, newSca);
 
-        // 6. Actualizar el transform del Actor
         transform->setPosition(EU::Vector3(newPos[0], newPos[1], newPos[2]));
         transform->setRotation(EU::Vector3(newRot[0], newRot[1], newRot[2]));
         transform->setScale(EU::Vector3(newSca[0], newSca[1], newSca[2]));
+
+        XMMATRIX matScale = XMMatrixScaling(newSca[0], newSca[1], newSca[2]);
+        XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
+            XMConvertToRadians(newRot[0]),
+            XMConvertToRadians(newRot[1]),
+            XMConvertToRadians(newRot[2])
+        );
+        XMMATRIX matTrans = XMMatrixTranslation(newPos[0], newPos[1], newPos[2]);
+
+        transform->matrix = matScale * matRot * matTrans;
     }
 }
 
 void GUI::drawGizmoToolbar() {
+    ImGuiIO& io = ImGui::GetIO();
+
     ImGui::SetNextWindowPos(ImVec2(10, 30), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowBgAlpha(0.35f);
 
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav;
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoFocusOnAppearing |
+        ImGuiWindowFlags_NoNav;
 
     if (ImGui::Begin("GizmoToolBar", nullptr, window_flags)) {
-        auto buttonMode = [&](const char* label, ImGuizmo::OPERATION op, ImGuiKey key) {
+        auto buttonMode = [&](const char* label, ImGuizmo::OPERATION op, const char* shortcut) {
             bool isActive = (mCurrentGizmoOperation == op);
-            if (isActive) ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.4f, 0.8f, 1.0f));
+            if (isActive) {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.4f, 0.8f, 1.0f));
+            }
 
-            if (ImGui::Button(label) || ImGui::IsKeyPressed(key)) {
+            if (ImGui::Button(label)) {
                 mCurrentGizmoOperation = op;
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("%s (%s)", label, shortcut);
             }
 
             if (isActive) ImGui::PopStyleColor();
             ImGui::SameLine();
             };
 
-        buttonMode("T", ImGuizmo::TRANSLATE, ImGuiKey_W);
-        buttonMode("R", ImGuizmo::ROTATE, ImGuiKey_E);
-        buttonMode("S", ImGuizmo::SCALE, ImGuiKey_R);
+        buttonMode("T", ImGuizmo::TRANSLATE, "W");
+        buttonMode("R", ImGuizmo::ROTATE, "E");
+        buttonMode("S", ImGuizmo::SCALE, "R");
+
+        static ImGuizmo::MODE mCurrentGizmoMode = ImGuizmo::WORLD;
+        if (ImGui::Button(mCurrentGizmoMode == ImGuizmo::WORLD ? "Global" : "Local")) {
+            mCurrentGizmoMode = (mCurrentGizmoMode == ImGuizmo::WORLD) ? ImGuizmo::LOCAL : ImGuizmo::WORLD;
+        }
     }
     ImGui::End();
 }

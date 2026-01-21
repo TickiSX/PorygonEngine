@@ -48,6 +48,9 @@
     <Filter Include="Include\SceneGraph">
       <UniqueIdentifier>{55f092a7-4bf4-4098-9b0a-f28bd9c29ffd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\SceneGraph">
+      <UniqueIdentifier>{fa752b52-d196-4d06-9f51-f163bb81bf37}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PorygonEngine.cpp">
@@ -130,6 +133,9 @@
     </ClCompile>
     <ClCompile Include="Imgui\ImGuizmo\ImGuizmo.cpp">
       <Filter>Imgui\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SceneGraph\SceneGraph.cpp">
+      <Filter>Source\SceneGraph</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -260,6 +266,9 @@
       <Filter>Imgui\Src</Filter>
     </ClInclude>
     <ClInclude Include="include\SceneGraph\HierarchyComponent.h">
+      <Filter>Include\SceneGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SceneGraph\SceneGraph.h">
       <Filter>Include\SceneGraph</Filter>
     </ClInclude>
   </ItemGroup>

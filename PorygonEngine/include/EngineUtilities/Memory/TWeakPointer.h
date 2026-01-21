@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * MIT License
  *
  * Copyright (c) 2025 Roberto Charreton
@@ -36,7 +36,7 @@ namespace
 		 *
 		 * La clase TWeakPointer proporciona una manera de observar un objeto gestionado por un TSharedPointer
 		 * sin tener influencia sobre el recuento de referencias del objeto. Permite acceder al objeto solo si
-		 * aún existe.
+		 * aï¿½n existe.
 		 */
 	template<typename T>
 	class TWeakPointer {
@@ -49,7 +49,7 @@ namespace
 		/**
 		 * @brief Constructor que toma un TSharedPointer.
 		 *
-		 * @param sharedPtr TSharedPointer desde el cual se observará el objeto.
+		 * @param sharedPtr TSharedPointer desde el cual se observarï¿½ el objeto.
 		 */
 		TWeakPointer(const TSharedPointer<T>& sharedPtr)
 			: ptr(sharedPtr.ptr), refCount(sharedPtr.refCount) {
@@ -66,6 +66,13 @@ namespace
 				return TSharedPointer<T>(ptr, refCount);
 			}
 			return TSharedPointer<T>();
+		}
+
+		// Reset
+		void
+			reset() {
+			ptr = nullptr;
+			refCount = nullptr;
 		}
 
 		// Hacer que TSharedPointer sea un amigo para acceder a los miembros privados.
@@ -105,7 +112,7 @@ int main()
 				EU::TSharedPointer<MyClass> sp2 = wp1.lock();
 				if (!sp2.isNull())
 				{
-						sp2->display(); // Debería mostrar el valor 10
+						sp2->display(); // Deberï¿½a mostrar el valor 10
 				}
 				else
 				{
@@ -116,23 +123,23 @@ int main()
 				EU::TSharedPointer<MyClass> sp3 = EU::MakeShared<MyClass>(20);
 				sp3 = std::move(sp1); // Mueve la propiedad de sp1 a sp3
 
-				// El puntero compartido original (sp1) ahora está vacío
+				// El puntero compartido original (sp1) ahora estï¿½ vacï¿½o
 				EU::TSharedPointer<MyClass> sp4 = wp1.lock();
 				if (sp4.isNull())
 				{
 						std::cout << "sp1 has been moved and is now null." << std::endl;
 				}
 
-				// Intentar obtener un TSharedPointer después del movimiento
+				// Intentar obtener un TSharedPointer despuï¿½s del movimiento
 				if (sp3.isNull())
 				{
 						std::cout << "sp3 is null." << std::endl;
 				}
 				else
 				{
-						sp3->display(); // Debería mostrar el valor 20
+						sp3->display(); // Deberï¿½a mostrar el valor 20
 				}
-		} // Aquí, tanto sp2 como sp4 se destruyen y la memoria de MyClass se libera automáticamente
+		} // Aquï¿½, tanto sp2 como sp4 se destruyen y la memoria de MyClass se libera automï¿½ticamente
 
 		return 0;
 }

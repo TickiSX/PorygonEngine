@@ -6,6 +6,7 @@ BaseApp::awake() {
     HRESULT hr = S_OK;
 
     // Inicializacion de dlls y elementos externos al motor.
+    // Integración del SceneGraph (del código de referencia)
     m_sceneGraph.init();
 
     // Log Success Message
@@ -119,17 +120,19 @@ BaseApp::init() {
     // Load Resources -> Modelos, Texturas e Interfaz de usuario
 
     // --- CARGA DE RECURSOS (Actor MA5C Original) ---
+    // Mantenemos el código original de MA5C
     m_cyberGun = EU::MakeShared<Actor>(m_device);
 
     if (!m_cyberGun.isNull()) {
-        // Crear vertex buffer y index buffer para el MA5C
         std::vector<MeshComponent> cyberGunMeshes;
-        m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX); // Ruta original
+        // Modelo original MA5C
+        m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX);
         cyberGunMeshes = m_model->GetMeshes();
 
         std::vector<Texture> cyberGunTextures;
-        hr = m_cyberGunAlbedo.init(m_device, "Assets/MA5C_2K_Color", ExtensionType::PNG); // Ruta original
-        // Load the Texture
+        // Textura original MA5C
+        hr = m_cyberGunAlbedo.init(m_device, "Assets/MA5C_2K_Color", ExtensionType::PNG);
+
         if (FAILED(hr)) {
             ERROR("Main", "InitDevice",
                 ("Failed to initialize cyberGunAlbedo. HRESULT: " + std::to_string(hr)).c_str());
@@ -154,14 +157,15 @@ BaseApp::init() {
         return E_FAIL;
     }
 
-    // Store the Actors in the Scene Graph (Integración SceneGraph)
+    // Store the Actors in the Scene Graph (Integración del SceneGraph)
     for (auto& actor : m_actors) {
-        // Usamos .get() porque SceneGraph espera Entity* (puntero crudo)
+        // Usamos .get() porque el SceneGraph espera Entity* (punteros crudos)
         m_sceneGraph.addEntity(actor.get());
     }
 
     // Define the input layout
-    // Usamos el estilo verboso del 2do código, pero añadimos NORMAL para PorygonEngine
+    // IMPORTANTE: Mantenemos el estilo del código actualizado, pero
+    // añadimos la semántica NORMAL porque PorygonEngine la requiere.
     std::vector<D3D11_INPUT_ELEMENT_DESC> Layout;
 
     D3D11_INPUT_ELEMENT_DESC position;
@@ -184,7 +188,7 @@ BaseApp::init() {
     texcoord.InstanceDataStepRate = 0;
     Layout.push_back(texcoord);
 
-    // IMPORTANTE: PorygonEngine necesita normales, así que las añadimos
+    // RESTAURADO NORMAL (Requerido para PorygonEngine)
     D3D11_INPUT_ELEMENT_DESC normal;
     normal.SemanticName = "NORMAL";
     normal.SemanticIndex = 0;
@@ -195,7 +199,7 @@ BaseApp::init() {
     normal.InstanceDataStepRate = 0;
     Layout.push_back(normal);
 
-    // Create the Shader Program (PorygonEngine original)
+    // Create the Shader Program (Mantenemos PorygonEngine)
     hr = m_shaderProgram.init(m_device, "PorygonEngine.fx", Layout);
     if (FAILED(hr)) {
         ERROR("Main", "InitDevice",
@@ -218,7 +222,7 @@ BaseApp::init() {
         return hr;
     }
 
-    // Initialize the view matrix (Cámara Original para ver el MA5C)
+    // Initialize the view matrix (Cámara original)
     XMVECTOR Eye = XMVectorSet(0.0f, 1.5f, -3.0f, 0.0f);
     XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
     XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -235,7 +239,7 @@ BaseApp::init() {
 
 void BaseApp::update(float deltaTime)
 {
-    // Update our time (Lógica del 2do código)
+    // Update our time
     static float t = 0.0f;
     if (m_swapChain.m_driverType == D3D_DRIVER_TYPE_REFERENCE)
     {
@@ -253,7 +257,6 @@ void BaseApp::update(float deltaTime)
     // Update User Interface
     m_gui.update(m_viewport, m_window);
 
-    // UI Panels
     if (!m_actors.empty()) {
         m_gui.inspectorGeneral(m_actors[m_gui.selectedActorIndex]);
         m_gui.outliner(m_actors);
@@ -266,12 +269,10 @@ void BaseApp::update(float deltaTime)
     cbChangesOnResize.mProjection = XMMatrixTranspose(m_Projection);
     m_cbChangeOnResize.update(m_deviceContext, nullptr, 0, nullptr, &cbChangesOnResize, 0, 0);
 
-    // Update Actors
-    // Usamos m_sceneGraph.update para aprovechar la jerarquía y optimización
-    // en lugar del bucle manual, ya que SceneGraph::update hace lo mismo + jerarquía.
+    // Update Actors using SceneGraph
     m_sceneGraph.update(deltaTime, m_deviceContext);
 
-    // Gizmo (Al final del update)
+    // EditTransform (Gizmo)
     if (!m_actors.empty()) {
         m_gui.editTransform(m_View, m_Projection, m_actors[m_gui.selectedActorIndex]);
     }
@@ -296,7 +297,7 @@ BaseApp::render() {
     m_cbNeverChanges.render(m_deviceContext, 0, 1);
     m_cbChangeOnResize.render(m_deviceContext, 1, 1);
 
-    // Render all actors (Usando SceneGraph)
+    // Render all actors via SceneGraph
     m_sceneGraph.render(m_deviceContext);
 
     // Render UI

@@ -118,7 +118,6 @@ void Actor::render(DeviceContext& deviceContext) {
     }
 }
 
-
 void Actor::destroy() {
     for (auto& vertexBuffer : m_vertexBuffers) {
         vertexBuffer.destroy();

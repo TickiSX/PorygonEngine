@@ -92,7 +92,7 @@ void GUI::vec3Control(const std::string& label, float* values, float resetValue,
     ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 
-    // --- CORRECCIÓN DEL ERROR FONTSIZE ---
+    // --- CORRECCIÓN DEL ERROR FONTSIZE (Usando API pública en lugar de GImGui) ---
     float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
     ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
 
@@ -100,7 +100,7 @@ void GUI::vec3Control(const std::string& label, float* values, float resetValue,
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-    // ImGui::PushFont(boldFont); // Opcional si tienes fuente negrita
+    // ImGui::PushFont(boldFont); 
     if (ImGui::Button("X", buttonSize)) values[0] = resetValue;
     // ImGui::PopFont();
     ImGui::PopStyleColor(3);
@@ -381,11 +381,12 @@ void GUI::editTransform(const XMMATRIX& view, const XMMATRIX& projection, EU::TS
     ImGuizmo::SetID(0);
     ImGuizmo::AllowAxisFlip(false);
 
+    // Configuración de Snapping (Ajuste por pasos)
     float snapValue = 0.5f;
     if (mCurrentGizmoOperation == ImGuizmo::ROTATE) snapValue = 45.0f;
 
     float snap[3] = { snapValue, snapValue, snapValue };
-    bool useSnap = ImGui::GetIO().KeyCtrl;
+    bool useSnap = ImGui::GetIO().KeyCtrl; // Activar snap con tecla Ctrl
 
     ImGuizmo::Manipulate(
         vArr, pArr,

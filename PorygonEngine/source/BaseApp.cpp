@@ -6,6 +6,7 @@ BaseApp::awake() {
     HRESULT hr = S_OK;
 
     // Inicializacion de dlls y elementos externos al motor.
+    m_sceneGraph.init();
 
     // Log Success Message
     MESSAGE("Main", "Awake", "Application awake successfully.");
@@ -117,18 +118,17 @@ BaseApp::init() {
 
     // Load Resources -> Modelos, Texturas e Interfaz de usuario
 
-    // --- CARGA DE RECURSOS (Actor MA5C) ---
-    // Usamos el MA5C original pero con la estructura del segundo codigo
+    // --- CARGA DE RECURSOS (Actor MA5C Original) ---
     m_cyberGun = EU::MakeShared<Actor>(m_device);
 
     if (!m_cyberGun.isNull()) {
         // Crear vertex buffer y index buffer para el MA5C
         std::vector<MeshComponent> cyberGunMeshes;
-        m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX); // Restaurado MA5C
+        m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX); // Ruta original
         cyberGunMeshes = m_model->GetMeshes();
 
         std::vector<Texture> cyberGunTextures;
-        hr = m_cyberGunAlbedo.init(m_device, "Assets/MA5C_2K_Color", ExtensionType::PNG); // Restaurado Textura MA5C
+        hr = m_cyberGunAlbedo.init(m_device, "Assets/MA5C_2K_Color", ExtensionType::PNG); // Ruta original
         // Load the Texture
         if (FAILED(hr)) {
             ERROR("Main", "InitDevice",
@@ -139,10 +139,10 @@ BaseApp::init() {
 
         m_cyberGun->setMesh(m_device, cyberGunMeshes);
         m_cyberGun->setTextures(cyberGunTextures);
-        m_cyberGun->setName("CyberGun"); // Mantenemos nombre interno pero es el MA5C
+        m_cyberGun->setName("CyberGun");
         m_actors.push_back(m_cyberGun);
 
-        // Transformación inicial (Restaurada la original 0,0,0)
+        // Transformación inicial Original (0,0,0)
         m_cyberGun->getComponent<Transform>()->setTransform(
             EU::Vector3(0.0f, 0.0f, 0.0f),
             EU::Vector3(0.0f, 0.0f, 0.0f),
@@ -154,9 +154,14 @@ BaseApp::init() {
         return E_FAIL;
     }
 
+    // Store the Actors in the Scene Graph (Integración SceneGraph)
+    for (auto& actor : m_actors) {
+        // Usamos .get() porque SceneGraph espera Entity* (puntero crudo)
+        m_sceneGraph.addEntity(actor.get());
+    }
+
     // Define the input layout
-    // NOTA: He añadido NORMAL de vuelta porque PorygonEngine lo necesita, 
-    // pero manteniendo el estilo verboso del 2do código.
+    // Usamos el estilo verboso del 2do código, pero añadimos NORMAL para PorygonEngine
     std::vector<D3D11_INPUT_ELEMENT_DESC> Layout;
 
     D3D11_INPUT_ELEMENT_DESC position;
@@ -179,7 +184,7 @@ BaseApp::init() {
     texcoord.InstanceDataStepRate = 0;
     Layout.push_back(texcoord);
 
-    // Añadido NORMAL porque PorygonEngine lo usaba en el código original
+    // IMPORTANTE: PorygonEngine necesita normales, así que las añadimos
     D3D11_INPUT_ELEMENT_DESC normal;
     normal.SemanticName = "NORMAL";
     normal.SemanticIndex = 0;
@@ -190,8 +195,7 @@ BaseApp::init() {
     normal.InstanceDataStepRate = 0;
     Layout.push_back(normal);
 
-    // Create the Shader Program
-    // Restaurado PorygonEngine.fx
+    // Create the Shader Program (PorygonEngine original)
     hr = m_shaderProgram.init(m_device, "PorygonEngine.fx", Layout);
     if (FAILED(hr)) {
         ERROR("Main", "InitDevice",
@@ -214,7 +218,7 @@ BaseApp::init() {
         return hr;
     }
 
-    // Initialize the view matrix (Restaurada la cámara original que mira al 0,0,0)
+    // Initialize the view matrix (Cámara Original para ver el MA5C)
     XMVECTOR Eye = XMVectorSet(0.0f, 1.5f, -3.0f, 0.0f);
     XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
     XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -231,7 +235,7 @@ BaseApp::init() {
 
 void BaseApp::update(float deltaTime)
 {
-    // Update our time (Lógica actualizada del 2do código)
+    // Update our time (Lógica del 2do código)
     static float t = 0.0f;
     if (m_swapChain.m_driverType == D3D_DRIVER_TYPE_REFERENCE)
     {
@@ -246,13 +250,10 @@ void BaseApp::update(float deltaTime)
         t = (dwTimeCur - dwTimeStart) / 1000.0f;
     }
 
-    // Update User Interface (Usando la firma actualizada con m_viewport del 2do código)
+    // Update User Interface
     m_gui.update(m_viewport, m_window);
 
-    // Demo window comentada como en el 2do código
-    bool show_demo_window = true;
-    //ImGui::ShowDemoWindow(&show_demo_window);
-
+    // UI Panels
     if (!m_actors.empty()) {
         m_gui.inspectorGeneral(m_actors[m_gui.selectedActorIndex]);
         m_gui.outliner(m_actors);
@@ -265,13 +266,12 @@ void BaseApp::update(float deltaTime)
     cbChangesOnResize.mProjection = XMMatrixTranspose(m_Projection);
     m_cbChangeOnResize.update(m_deviceContext, nullptr, 0, nullptr, &cbChangesOnResize, 0, 0);
 
-
     // Update Actors
-    for (auto& actor : m_actors) {
-        actor->update(deltaTime, m_deviceContext);
-    }
+    // Usamos m_sceneGraph.update para aprovechar la jerarquía y optimización
+    // en lugar del bucle manual, ya que SceneGraph::update hace lo mismo + jerarquía.
+    m_sceneGraph.update(deltaTime, m_deviceContext);
 
-    // EditTransform (Gizmo) al final, como en el 2do código
+    // Gizmo (Al final del update)
     if (!m_actors.empty()) {
         m_gui.editTransform(m_View, m_Projection, m_actors[m_gui.selectedActorIndex]);
     }
@@ -296,10 +296,8 @@ BaseApp::render() {
     m_cbNeverChanges.render(m_deviceContext, 0, 1);
     m_cbChangeOnResize.render(m_deviceContext, 1, 1);
 
-    // Render all actors
-    for (auto& actor : m_actors) {
-        actor->render(m_deviceContext);
-    }
+    // Render all actors (Usando SceneGraph)
+    m_sceneGraph.render(m_deviceContext);
 
     // Render UI
     m_gui.render();
@@ -311,8 +309,12 @@ BaseApp::render() {
 void
 BaseApp::destroy() {
     if (m_deviceContext.m_deviceContext) m_deviceContext.m_deviceContext->ClearState();
-    // Añadido borrado de modelo del 1er código por seguridad
+
+    // Limpieza de modelo original
     if (m_model) delete m_model;
+
+    // Limpieza de SceneGraph
+    m_sceneGraph.destroy();
 
     m_cbNeverChanges.destroy();
     m_cbChangeOnResize.destroy();

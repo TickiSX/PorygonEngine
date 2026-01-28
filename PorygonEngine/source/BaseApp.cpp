@@ -6,7 +6,6 @@ BaseApp::awake() {
     HRESULT hr = S_OK;
 
     // Inicializacion de dlls y elementos externos al motor.
-    // Integración del SceneGraph (del código de referencia)
     m_sceneGraph.init();
 
     // Log Success Message
@@ -119,8 +118,18 @@ BaseApp::init() {
 
     // Load Resources -> Modelos, Texturas e Interfaz de usuario
 
+    // --- SKYBOX (Nuevo del 2do codigo) ---
+    std::array<std::string, 6> faces = {
+        "Skybox/cubemap_0.png",
+        "Skybox/cubemap_1.png",
+        "Skybox/cubemap_2.png",
+        "Skybox/cubemap_3.png",
+        "Skybox/cubemap_4.png",
+        "Skybox/cubemap_5.png"
+    };
+    m_skyboxTex.CreateCubemap(m_device, m_deviceContext, faces, true);
+
     // --- CARGA DE RECURSOS (Actor MA5C Original) ---
-    // Mantenemos el código original de MA5C
     m_cyberGun = EU::MakeShared<Actor>(m_device);
 
     if (!m_cyberGun.isNull()) {
@@ -142,7 +151,7 @@ BaseApp::init() {
 
         m_cyberGun->setMesh(m_device, cyberGunMeshes);
         m_cyberGun->setTextures(cyberGunTextures);
-        m_cyberGun->setName("CyberGun");
+        m_cyberGun->setName("CyberGun"); // Nombre interno
         m_actors.push_back(m_cyberGun);
 
         // Transformación inicial Original (0,0,0)
@@ -157,15 +166,31 @@ BaseApp::init() {
         return E_FAIL;
     }
 
-    // Store the Actors in the Scene Graph (Integración del SceneGraph)
+    // --- CHARACTER (Nuevo del 2do codigo) ---
+    m_Character = EU::MakeShared<Actor>(m_device);
+    m_Character->setName("m_Character");
+    m_Character->getComponent<Transform>()->setTransform(
+        EU::Vector3(2.0f, -4.90f, 11.60f),
+        EU::Vector3(-0.60f, 3.0f, -0.20f),
+        EU::Vector3(1.0f, 1.0f, 1.0f)
+    );
+
+    // Store the Actors in the Scene Graph
     for (auto& actor : m_actors) {
-        // Usamos .get() porque el SceneGraph espera Entity* (punteros crudos)
         m_sceneGraph.addEntity(actor.get());
     }
 
+    // Attach Character to root (suponiendo que m_entities[0] es el CyberGun cargado antes)
+    if (!m_sceneGraph.m_entities.empty()) {
+        m_sceneGraph.attach(m_Character.get(), m_sceneGraph.m_entities[0]);
+    }
+    else {
+        // Fallback si no hay entidades previas
+        m_sceneGraph.addEntity(m_Character.get());
+    }
+
     // Define the input layout
-    // IMPORTANTE: Mantenemos el estilo del código actualizado, pero
-    // añadimos la semántica NORMAL porque PorygonEngine la requiere.
+    // Mantenemos NORMAL porque PorygonEngine lo requiere
     std::vector<D3D11_INPUT_ELEMENT_DESC> Layout;
 
     D3D11_INPUT_ELEMENT_DESC position;
@@ -188,7 +213,7 @@ BaseApp::init() {
     texcoord.InstanceDataStepRate = 0;
     Layout.push_back(texcoord);
 
-    // RESTAURADO NORMAL (Requerido para PorygonEngine)
+    // NORMAL Requerida para PorygonEngine (NO BORRAR)
     D3D11_INPUT_ELEMENT_DESC normal;
     normal.SemanticName = "NORMAL";
     normal.SemanticIndex = 0;
@@ -199,7 +224,7 @@ BaseApp::init() {
     normal.InstanceDataStepRate = 0;
     Layout.push_back(normal);
 
-    // Create the Shader Program (Mantenemos PorygonEngine)
+    // Create the Shader Program (PorygonEngine Original)
     hr = m_shaderProgram.init(m_device, "PorygonEngine.fx", Layout);
     if (FAILED(hr)) {
         ERROR("Main", "InitDevice",
@@ -222,7 +247,7 @@ BaseApp::init() {
         return hr;
     }
 
-    // Initialize the view matrix (Cámara original)
+    // Initialize the view matrix
     XMVECTOR Eye = XMVectorSet(0.0f, 1.5f, -3.0f, 0.0f);
     XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
     XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -261,6 +286,32 @@ void BaseApp::update(float deltaTime)
         m_gui.inspectorGeneral(m_actors[m_gui.selectedActorIndex]);
         m_gui.outliner(m_actors);
     }
+
+    // --- SKYBOX UI DEBUG (Nuevo del 2do codigo) ---
+    static ID3D11ShaderResourceView* faceSRV[6] = { nullptr };
+
+    if (!faceSRV[0]) {
+        for (UINT i = 0; i < 6; ++i) {
+            faceSRV[i] = m_skyboxTex.CreateCubemapFaceSRV(m_device.m_device, m_skyboxTex.m_texture,
+                DXGI_FORMAT_R8G8B8A8_UNORM, i, 1);
+        }
+    }
+
+    ImGui::Text("Cubemap Faces:");
+    const float thumb = 128.0f;
+
+    for (int i = 0; i < 6; ++i) {
+        ImGui::Image((ImTextureID)faceSRV[i], ImVec2(thumb, thumb));
+        if ((i % 3) != 2) ImGui::SameLine();
+    }
+    ImGui::Begin("Cubemap");
+    ImGui::Text("Skybox Cubemap");
+    ImGui::Image((void*)m_skyboxTex.m_textureFromImg,
+        ImVec2(256, 256),
+        ImVec2(0, 0),
+        ImVec2(1, 1));
+    ImGui::End();
+    // ---------------------------------------------
 
     // Actualizar la matriz de proyección y vista
     cbNeverChanges.mView = XMMatrixTranspose(m_View);

@@ -1,5 +1,4 @@
 ﻿#pragma once
-
 // Librerias STD
 #include <string>
 #include <sstream>
@@ -10,6 +9,7 @@
 #include <memory>
 #include <unordered_map>
 #include <type_traits>
+#include <array>
 
 // Librerias DirectX
 #include <d3d11.h>
@@ -90,9 +90,9 @@ enum ShaderType {
  */
 enum
     ComponentType {
-    NONE = 0,      ///< Tipo de componente no especificado.
-    TRANSFORM = 1, ///< Componente de transformación.
-    MESH = 2,      ///< Componente de malla.
+    NONE = 0,     ///< Tipo de componente no especificado.
+    TRANSFORM = 1,///< Componente de transformaci�n.
+    MESH = 2,     ///< Componente de malla.
     MATERIAL = 3,  ///< Componente de material.
-    HIERARCHY = 4  ///< Componente de jerarquía.
+    HIERARCHY = 4 ///< Componente de jerarqu�a.
 };

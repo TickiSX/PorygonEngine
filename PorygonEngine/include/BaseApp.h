@@ -61,16 +61,17 @@ private:
 	Buffer                  m_cbNeverChanges;
 	Buffer                  m_cbChangeOnResize;
 	Texture                 m_cyberGunAlbedo;
+	Texture                 m_skyboxTex;
 
 	XMMATRIX                m_View;
 	XMMATRIX                m_Projection;
 
-	// Scene Graph Integration
 	SceneGraph              m_sceneGraph;
 
-	// Actor Ownership
+	// Actores
 	std::vector<EU::TSharedPointer<Actor>> m_actors;
 	EU::TSharedPointer<Actor>              m_cyberGun;
+	EU::TSharedPointer<Actor>              m_Character; // Agregado para solucionar el error de compilación
 
 	Model3D* m_model;
 

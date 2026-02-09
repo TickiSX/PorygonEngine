@@ -137,6 +137,9 @@
     <ClCompile Include="source\SceneGraph\SceneGraph.cpp">
       <Filter>Source\SceneGraph</Filter>
     </ClCompile>
+    <ClCompile Include="source\Camera.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">
@@ -270,6 +273,9 @@
     </ClInclude>
     <ClInclude Include="include\SceneGraph\SceneGraph.h">
       <Filter>Include\SceneGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Utilities\Camera.h">
+      <Filter>Include\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

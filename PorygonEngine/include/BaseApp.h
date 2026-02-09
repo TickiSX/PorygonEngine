@@ -16,66 +16,63 @@
 #include "ECS/Actor.h"
 #include "EngineUtilities\GUI/GUI.h"
 #include "SceneGraph\SceneGraph.h"
+#include "EngineUtilities\Utilities\Camera.h"
 
 extern IMGUI_IMPL_API
 LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class BaseApp {
 public:
-	BaseApp() = default;
-	~BaseApp() { destroy(); }
+    BaseApp() = default;
+    ~BaseApp() { destroy(); }
 
-	HRESULT
-		awake();
-
-	int
-		run(HINSTANCE hInst, int nCmdShow);
-
-	HRESULT
-		init();
-
-	void
-		update(float deltaTime);
-
-	void
-		render();
-
-	void
-		destroy();
+    HRESULT awake();
+    int run(HINSTANCE hInst, int nCmdShow);
+    HRESULT init();
+    void update(float deltaTime);
+    void render();
+    void destroy();
 
 private:
-	static LRESULT CALLBACK
-		WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-	Window                  m_window;
-	Device                  m_device;
-	DeviceContext           m_deviceContext;
-	SwapChain               m_swapChain;
-	Texture                 m_backBuffer;
-	RenderTargetView        m_renderTargetView;
-	Texture                 m_depthStencil;
-	DepthStencilView        m_depthStencilView;
-	Viewport                m_viewport;
-	ShaderProgram           m_shaderProgram;
-	Buffer                  m_cbNeverChanges;
-	Buffer                  m_cbChangeOnResize;
-	Texture                 m_cyberGunAlbedo;
-	Texture                 m_skyboxTex;
+    // Sistemas Core
+    Window              m_window;
+    Device              m_device;
+    DeviceContext       m_deviceContext;
+    SwapChain           m_swapChain;
+    Texture             m_backBuffer;
+    RenderTargetView    m_renderTargetView;
+    Texture             m_depthStencil;
+    DepthStencilView    m_depthStencilView;
+    Viewport            m_viewport;
+    ShaderProgram       m_shaderProgram;
 
-	XMMATRIX                m_View;
-	XMMATRIX                m_Projection;
+    // Buffers y Recursos
+    Buffer              m_cbNeverChanges;
+    Buffer              m_cbChangeOnResize;
+    Texture             m_cyberGunAlbedo;
+    Texture             m_skyboxTex;
+    Model3D* m_model = nullptr; // Inicializado a null por seguridad
 
-	SceneGraph              m_sceneGraph;
+    // Cámara (Reemplaza a m_View y m_Projection)
+    Camera              m_camera;
 
-	// Actores
-	std::vector<EU::TSharedPointer<Actor>> m_actors;
-	EU::TSharedPointer<Actor>              m_cyberGun;
-	EU::TSharedPointer<Actor>              m_Character; // Agregado para solucionar el error de compilación
+    // Escena y Actores
+    SceneGraph          m_sceneGraph;
 
-	Model3D* m_model;
+    // Lista de actores
+    std::vector<EU::TSharedPointer<Actor>> m_actors;
 
-	CBChangeOnResize        cbChangesOnResize;
-	CBNeverChanges          cbNeverChanges;
-	GUI                     m_gui;
+    // Actores específicos
+    EU::TSharedPointer<Actor> m_cyberGun;
+    EU::TSharedPointer<Actor> m_Character; // <--- ESTO FALTABA
+
+    // Estructuras de datos para Buffers
+    CBChangeOnResize    cbChangesOnResize;
+    CBNeverChanges      cbNeverChanges;
+
+    // Interfaz
+    GUI                 m_gui;
 };

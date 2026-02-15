@@ -5,66 +5,126 @@
 class DeviceContext;
 class Entity;
 
-class
-	HierarchyComponent : public Component {
+/**
+ * @class HierarchyComponent
+ * @brief Componente responsable de gestionar las relaciones de jerarquía (padre-hijo) entre entidades.
+ * * Permite que las entidades se organicen en una estructura de árbol (Grafo de Escena),
+ * facilitando transformaciones relativas y propagación de estados.
+ */
+class HierarchyComponent : public Component {
 public:
-	HierarchyComponent() : Component(ComponentType::HIERARCHY) {}
-	~HierarchyComponent() = default;
+    /**
+     * @brief Constructor por defecto.
+     * Asigna el tipo de componente como HIERARCHY.
+     */
+    HierarchyComponent() : Component(ComponentType::HIERARCHY) {}
 
-	void
-		init() override {}
+    /**
+     * @brief Destructor por defecto.
+     */
+    ~HierarchyComponent() = default;
 
-	void
-		update(float) override {}
+    /**
+     * @brief Inicialización del componente.
+     * Actualmente no realiza ninguna operación.
+     */
+    void
+        init() override {}
 
-	void
-		render(DeviceContext& deviceContext) override {}
+    /**
+     * @brief Actualización por frame.
+     * @param delta_time Tiempo transcurrido desde el último frame.
+     */
+    void
+        update(float) override {}
 
-	void
-		destroy() override {
-		m_children.clear();
-		m_parent = nullptr;
-	}
+    /**
+     * @brief Renderizado del componente.
+     * @param deviceContext Contexto del dispositivo gráfico.
+     */
+    void
+        render(DeviceContext& deviceContext) override {}
 
-	// API SceneGraph
-	void
-		setParent(Entity* parent) {
-		m_parent = parent;
-	}
+    /**
+     * @brief Limpieza de recursos al destruir el componente.
+     * * Elimina las referencias a los hijos y desconecta al padre para evitar
+     * punteros colgantes dentro de la lógica de este componente.
+     */
+    void
+        destroy() override {
+        m_children.clear();
+        m_parent = nullptr;
+    }
 
-	bool
-		isRoot() const {
-		return m_parent == nullptr;
-	}
+    // =========================================================
+    // API SceneGraph (Gestión de grafo de escena)
+    // =========================================================
 
-	bool
-		hasChildren() const {
-		return !m_children.empty();
-	}
+    /**
+     * @brief Establece la entidad padre de esta entidad.
+     * @param parent Puntero a la entidad que actuará como padre.
+     */
+    void
+        setParent(Entity* parent) {
+        m_parent = parent;
+    }
 
-	void
-		addChild(Entity* child) {
-		if (!child) {
-			return;
-		}
+    /**
+     * @brief Verifica si esta entidad es una raíz (no tiene padre).
+     * @return true si m_parent es nullptr, false en caso contrario.
+     */
+    bool
+        isRoot() const {
+        return m_parent == nullptr;
+    }
 
-		if (std::find(m_children.begin(), m_children.end(), child) != m_children.end()) {
-			return;
-		}
-		m_children.push_back(child);
-	}
+    /**
+     * @brief Verifica si la entidad tiene hijos asociados.
+     * @return true si la lista de hijos no está vacía.
+     */
+    bool
+        hasChildren() const {
+        return !m_children.empty();
+    }
 
-	void
-		removeChild(Entity* child) {
-		if (!child) return;
+    /**
+     * @brief Añade una entidad hija a la lista.
+     * * Verifica primero si el hijo es válido y si ya existe en la lista
+     * para evitar duplicados.
+     * @param child Puntero a la entidad a añadir.
+     */
+    void
+        addChild(Entity* child) {
+        if (!child) {
+            return;
+        }
 
-		m_children.erase(
-			std::remove(m_children.begin(), m_children.end(), child),
-			m_children.end()
-		);
-	}
+        // Evitar añadir el mismo hijo dos veces
+        if (std::find(m_children.begin(), m_children.end(), child) != m_children.end()) {
+            return;
+        }
+        m_children.push_back(child);
+    }
+
+    /**
+     * @brief Elimina una entidad hija de la lista.
+     * * Utiliza el idioma Erase-Remove para eliminar eficientemente el elemento del vector.
+     * @param child Puntero a la entidad a remover.
+     */
+    void
+        removeChild(Entity* child) {
+        if (!child) return;
+
+        m_children.erase(
+            std::remove(m_children.begin(), m_children.end(), child),
+            m_children.end()
+        );
+    }
 
 public:
-	Entity* m_parent = nullptr;
-	std::vector<Entity*> m_children;
+    /** @brief Puntero a la entidad padre (nullptr si es raíz). */
+    Entity* m_parent = nullptr;
+
+    /** @brief Lista de punteros a las entidades hijas. */
+    std::vector<Entity*> m_children;
 };

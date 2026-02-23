@@ -436,8 +436,11 @@
     <ClCompile Include="Imgui\imgui-docking-znly-docking\imgui_tables.cpp" />
     <ClCompile Include="Imgui\imgui-docking-znly-docking\imgui_widgets.cpp" />
     <ClCompile Include="Imgui\ImGuizmo\ImGuizmo.cpp" />
+    <ClCompile Include="include\DepthStencilState.cpp" />
     <ClCompile Include="include\ECS\Entity.h" />
+    <ClCompile Include="include\RasterizerState.cpp" />
     <ClCompile Include="include\ResourceManager.h" />
+    <ClCompile Include="include\Skybox.cpp" />
     <ClCompile Include="PorygonEngine.cpp" />
     <ClCompile Include="source\BaseApp.cpp" />
     <ClCompile Include="source\Buffer.cpp" />
@@ -470,6 +473,7 @@
     <ClInclude Include="Imgui\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="include\BaseApp.h" />
     <ClInclude Include="include\Buffer.h" />
+    <ClInclude Include="include\DepthStencilState.h" />
     <ClInclude Include="include\DepthStencilView.h" />
     <ClInclude Include="include\Device.h" />
     <ClInclude Include="include\DeviceContext.h" />
@@ -483,6 +487,7 @@
     <ClInclude Include="include\EngineUtilities\Memory\TWeakPointer.h" />
     <ClInclude Include="include\EngineUtilities\Utilities\Camera.h" />
     <ClInclude Include="include\EngineUtilities\Utilities\EngineMath.h" />
+    <ClInclude Include="include\EngineUtilities\Utilities\Skybox.h" />
     <ClInclude Include="include\EngineUtilities\Vectors\Vector2.h" />
     <ClInclude Include="include\EngineUtilities\Vectors\Vector3.h" />
     <ClInclude Include="include\EngineUtilities\Vectors\Vector4.h" />
@@ -491,6 +496,7 @@
     <ClInclude Include="include\MeshComponent.h" />
     <ClInclude Include="include\Model3D.h" />
     <ClInclude Include="Include\Prerequisites.h" />
+    <ClInclude Include="include\RasterizerState.h" />
     <ClInclude Include="include\RenderTargetView.h" />
     <ClInclude Include="include\Resource.h" />
     <ClInclude Include="include\SamplerState.h" />

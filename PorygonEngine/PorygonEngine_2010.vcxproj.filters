@@ -140,6 +140,15 @@
     <ClCompile Include="source\Camera.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="include\DepthStencilState.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="include\RasterizerState.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="include\Skybox.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">
@@ -276,6 +285,15 @@
     </ClInclude>
     <ClInclude Include="include\EngineUtilities\Utilities\Camera.h">
       <Filter>Include\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Utilities\Skybox.h">
+      <Filter>Include\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DepthStencilState.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RasterizerState.h">
+      <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

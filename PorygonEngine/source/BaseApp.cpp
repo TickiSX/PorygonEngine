@@ -105,12 +105,13 @@ BaseApp::init() {
     };
     m_skyboxTex.CreateCubemap(m_device, m_deviceContext, faces, false);
 
-    // --- Set CyberGun Actor (Mantenido MA5C) ---
+    // --- Set CyberGun Actor (Manteniendo MA5C) ---
     m_cyberGun = EU::MakeShared<Actor>(m_device);
 
     if (!m_cyberGun.isNull()) {
         m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX);
 
+        // Carga de textura MA5C
         hr = m_cyberGunAlbedo.init(m_device, "Assets/MA5C_2K_Color", ExtensionType::PNG);
         if (FAILED(hr)) {
             ERROR("Main", "InitDevice", ("Failed to initialize MA5C textures. HRESULT: " + std::to_string(hr)).c_str());
@@ -126,6 +127,7 @@ BaseApp::init() {
         m_cyberGun->setName("CyberGun_MA5C");
         m_actors.push_back(m_cyberGun);
 
+        // Transformación inicial
         m_cyberGun->getComponent<Transform>()->setTransform(
             EU::Vector3(0.0f, 0.0f, 0.0f),
             EU::Vector3(0.0f, 0.0f, 0.0f),
@@ -147,16 +149,19 @@ BaseApp::init() {
     Layout.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
     Layout.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
-    // Crear Shader Program (Mantenido PorygonEngine.fx)
+    // Crear Shader Program (Manteniendo PorygonEngine.fx)
     hr = m_shaderProgram.init(m_device, "PorygonEngine.fx", Layout);
     if (FAILED(hr)) {
         ERROR("Main", "InitDevice", ("Failed to initialize PorygonEngine.fx. HRESULT: " + std::to_string(hr)).c_str());
         return hr;
     }
 
-    // Crear Constant Buffers
+    // Crear Constant Buffers con validación
     hr = m_cbNeverChanges.init(m_device, sizeof(CBNeverChanges));
+    if (FAILED(hr)) return hr;
+
     hr = m_cbChangeOnResize.init(m_device, sizeof(CBChangeOnResize));
+    if (FAILED(hr)) return hr;
 
     // Inicializar Camara
     m_camera.setLens(XM_PIDIV4, m_window.m_width / (float)m_window.m_height, 0.01f, 1000.0f);
@@ -171,7 +176,10 @@ BaseApp::init() {
 
     // Inicializar estados por defecto
     hr = m_defaultRasterizer.init(m_device, D3D11_FILL_SOLID, D3D11_CULL_BACK, false, true);
+    if (FAILED(hr)) return hr;
+
     hr = m_defaultDepthStencil.init(m_device, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS);
+    if (FAILED(hr)) return hr;
 
     return S_OK;
 }
@@ -181,6 +189,7 @@ void BaseApp::update(float deltaTime)
     // Actualizar Interfaz
     m_gui.update(m_viewport, m_window);
 
+    // Lógica de selección segura para GUI e Inspector
     if (!m_actors.empty()) {
         unsigned int idx = m_gui.selectedActorIndex;
         if (idx < m_actors.size()) {

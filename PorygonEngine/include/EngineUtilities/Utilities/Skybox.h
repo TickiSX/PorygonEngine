@@ -5,35 +5,40 @@
 #include "Buffer.h"
 #include "SamplerState.h"
 #include "Model3D.h"
+#include "RasterizerState.h"
+#include "DepthStencilState.h"
 #include "EngineUtilities\Utilities\Camera.h"
 #include "ECS\Actor.h"
 
 class Device;
 class DeviceContext;
 
-class Skybox {
+class
+	Skybox {
 public:
-    Skybox() = default;
-    // Llamamos a destroy en el destructor para evitar fugas de memoria
-    ~Skybox() { destroy(); }
+	Skybox() = default;
+	~Skybox() = default;
 
-    HRESULT
-        init(Device& device, DeviceContext* deviceContext, Texture& cubemap);
+	HRESULT
+		init(Device& device, DeviceContext* deviceContext, Texture& cubemap);
 
-    void
-        update();
+	void
+		update() {}
 
-    void
-        render(DeviceContext& deviceContext, Camera& camera);
+	void
+		render(DeviceContext& deviceContext, Camera& camera);
 
-    void
-        destroy();
+	void
+		destroy() {}
 
 private:
-    ShaderProgram             m_shaderProgram;
-    Buffer                   m_constantBuffer;
-    SamplerState             m_samplerState;
-    Texture                  m_skyboxTexture;
-    Model3D* m_cubeModel = nullptr;
-    EU::TSharedPointer<Actor> m_skybox;
+	ShaderProgram m_shaderProgram;
+	Buffer m_constantBuffer;
+	SamplerState m_samplerState;
+	RasterizerState m_rasterizerState;
+	DepthStencilState m_depthStencilState;
+	Texture m_skyboxTexture;
+	Model3D* m_cubeModel = nullptr;
+	EU::TSharedPointer<Actor> m_skybox;
+
 };

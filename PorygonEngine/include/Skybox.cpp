@@ -2,125 +2,140 @@
 #include "Device.h"
 #include "DeviceContext.h"
 
+
 HRESULT
 Skybox::init(Device& device, DeviceContext* deviceContext, Texture& cubemap) {
-    // 0) Limpiar si ya existía algo
-    destroy();
+	destroy();
+	// Cargar el cubemap
+	m_skyboxTexture = cubemap;
 
-    // Cargar el cubemap
-    m_skyboxTexture = cubemap;
+	// 1) Geometr�a (cubo)
+	 // Cubo unitario centrado en origen. (tama�o no importa si quitas traslaci�n)
+	const SkyboxVertex vertices[] = {
+			{-1,-1,-1}, {-1,+1,-1}, {+1,+1,-1}, {+1,-1,-1}, // back
+			{-1,-1,+1}, {-1,+1,+1}, {+1,+1,+1}, {+1,-1,+1}, // front
+	};
 
-    // 1) Geometría (cubo unitario)
-    const SkyboxVertex vertices[] = {
-        {-1,-1,-1}, {-1,+1,-1}, {+1,+1,-1}, {+1,-1,-1}, // back
-        {-1,-1,+1}, {-1,+1,+1}, {+1,+1,+1}, {+1,-1,+1}, // front
-    };
+	const unsigned int indices[] =
+	{
+		// back (-Z)
+		0,1,2, 0,2,3,
+		// front (+Z)
+		4,6,5, 4,7,6,
+		// left (-X)
+		4,5,1, 4,1,0,
+		// right (+X)
+		3,2,6, 3,6,7,
+		// top (+Y)
+		1,5,6, 1,6,2,
+		// bottom (-Y)
+		4,0,3, 4,3,7
+	};
 
-    const unsigned int indices[] = {
-        0,1,2, 0,2,3, // back (-Z)
-        4,6,5, 4,7,6, // front (+Z)
-        4,5,1, 4,1,0, // left (-X)
-        3,2,6, 3,6,7, // right (+X)
-        1,5,6, 1,6,2, // top (+Y)
-        4,0,3, 4,3,7  // bottom (-Y)
-    };
+	// Load Model
+	m_skybox = EU::MakeShared<Actor>(device);
 
-    // 2) Load Model
-    m_skybox = EU::MakeShared<Actor>(device);
+	if (!m_skybox.isNull()) {
+		// Crear vertex buffer y index buffer para el skybox
+		std::vector<MeshComponent> skybox;
+		m_cubeModel = new Model3D("Skybox", vertices, indices);
 
-    if (!m_skybox.isNull()) {
-        std::vector<MeshComponent> skyboxMeshes;
-        m_cubeModel = new Model3D("Skybox", vertices, indices);
-        skyboxMeshes = m_cubeModel->GetMeshes();
+		skybox = m_cubeModel->GetMeshes();
 
-        m_skybox->setMesh(device, skyboxMeshes);
-        m_skybox->setName("SkyboxActor");
-    }
-    else {
-        ERROR("Skybox", "Init", "Failed to create Skybox Actor.");
-        return E_FAIL;
-    }
+		// No texture loading
 
-    // 3) Define Input Layout
-    std::vector<D3D11_INPUT_ELEMENT_DESC> Layout;
-    D3D11_INPUT_ELEMENT_DESC position;
-    position.SemanticName = "POSITION";
-    position.SemanticIndex = 0;
-    position.Format = DXGI_FORMAT_R32G32B32_FLOAT;
-    position.InputSlot = 0;
-    position.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-    position.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-    position.InstanceDataStepRate = 0;
-    Layout.push_back(position);
+		m_skybox->setMesh(device, skybox);
+		m_skybox->setName("skybox");
+	}
+	else {
+		ERROR("Skybox", "Init", "Failed to create Skybox Actor.");
+		return E_FAIL;
+	}
 
-    HRESULT hr = S_OK;
 
-    // 4) Shaders
-    hr = m_shaderProgram.init(device, "Skybox.fx", Layout);
-    if (FAILED(hr)) return hr;
+	// Define the input layout
+	std::vector<D3D11_INPUT_ELEMENT_DESC> Layout;
+	D3D11_INPUT_ELEMENT_DESC position;
+	position.SemanticName = "POSITION";
+	position.SemanticIndex = 0;
+	position.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	position.InputSlot = 0;
+	position.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT /*0*/;
+	position.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+	position.InstanceDataStepRate = 0;
+	Layout.push_back(position);
 
-    // 5) Constant Buffer (CBSkybox)
-    hr = m_constantBuffer.init(device, sizeof(CBSkybox));
-    if (FAILED(hr)) {
-        ERROR("Skybox", "init", ("Failed to initialize Skybox Constant Buffer. HRESULT: " + std::to_string(hr)).c_str());
-        return hr;
-    }
+	HRESULT hr = S_OK;
+	// Create the Shader Program
+	hr = m_shaderProgram.init(device, "Skybox.hlsl", Layout);
+	if (FAILED(hr)) {
+		ERROR("Skybox", "init",
+			("Failed to initialize ShaderProgram. HRESULT: " + std::to_string(hr)).c_str());
+		return hr;
+	}
 
-    // 6) Sampler State
-    hr = m_samplerState.init(device);
-    if (FAILED(hr)) {
-        ERROR("Skybox", "init", "Failed to create new SamplerState");
-        return hr;
-    }
+	// Create the constant buffers
+	hr = m_constantBuffer.init(device, sizeof(CBSkybox));  // View
+	if (FAILED(hr)) {
+		ERROR("Skybox", "init",
+			("Failed to initialize NeverChanges Buffer. HRESULT: " + std::to_string(hr)).c_str());
+		return hr;
+	}
 
-    return S_OK; // IMPORTANTE: Cambiado de E_NOTIMPL a S_OK
-}
+	// Init SamplerState
+	hr = m_samplerState.init(device);
+	if (FAILED(hr)) {
+		ERROR("Skybox", "init", "Failed to create new SamplerState");
+	}
 
-void
-Skybox::update() {
-    // Reservado para lógica de rotación del cielo si fuera necesario
+	// Init Rasterizer
+	hr = m_rasterizerState.init(device, D3D11_FILL_SOLID, D3D11_CULL_FRONT, false, true);
+	if (FAILED(hr)) {
+		ERROR("Skybox", "init", "Failed to create new RasterizerState");
+	}
+
+	// Init DepthStencilState
+	hr = m_depthStencilState.init(device, true,
+		D3D11_DEPTH_WRITE_MASK_ZERO,
+		D3D11_COMPARISON_LESS_EQUAL);
+	if (FAILED(hr)) {
+		ERROR("Skybox", "init", "Failed to create new DepthStencilState");
+	}
+
+	return S_OK;
 }
 
 void
 Skybox::render(DeviceContext& deviceContext, Camera& camera) {
-    if (!m_cubeModel) return;
+	// Guard: si no se inicializ� bien, no intentes renderizar
+	if (!m_cubeModel || !m_skyboxTexture.m_textureFromImg) return;
 
-    // 1) View sin traslación para que el Skybox siempre rodee a la cámara
-    // Obtenemos la matriz de vista y quitamos la parte de movimiento
-    XMMATRIX view = camera.getView();
-    // Dependiendo de tu cámara, esto anula la posición
-    view.r[3] = XMVectorSet(0, 0, 0, 1);
+	// 1) States del skybox
+	m_rasterizerState.render(deviceContext);
+	m_depthStencilState.render(deviceContext, 0, false);
 
-    XMMATRIX vp = view * camera.getProj();
+	// 2) View sin traslaci�n + VP (SOLO una transpuesta al final)
+	XMMATRIX viewNoT = camera.GetViewNoTranslation();
+	XMMATRIX vp = viewNoT * camera.getProj();
+	CBSkybox cb{};
+	cb.mviewProj = XMMatrixTranspose(vp);
+	m_constantBuffer.update(deviceContext, nullptr, 0, nullptr, &cb, 0, 0);
+	m_constantBuffer.render(deviceContext, 0, 1);
 
-    // 2) Actualizar Constant Buffer
-    CBSkybox cb{};
-    cb.mviewProj = XMMatrixTranspose(vp);
-    m_constantBuffer.update(deviceContext, nullptr, 0, nullptr, &cb, 0, 0);
+	// 3) Shader + sampler (slot 10)
+	m_shaderProgram.render(deviceContext);
+	m_samplerState.render(deviceContext, 10, 1);
 
-    // 3) Bind de recursos
-    m_constantBuffer.render(deviceContext, 0, 1);
-    m_shaderProgram.render(deviceContext);
-    m_samplerState.render(deviceContext, 0, 1);
-    m_skyboxTexture.render(deviceContext, 0, 1);
+	// 4) IMPORTANT�SIMO: bindea cubemap ANTES del draw (slot 10)
+	m_skyboxTexture.render(deviceContext, 10, 1);
 
-    // 4) Draw (Cubo)
-    deviceContext.DrawIndexed(m_cubeModel->m_meshes[0].m_index.size(), 0, 0);
-}
+	// 5) Asegura IA (topology + VB/IB) antes del DrawIndexed
+	m_skybox->renderForSkybox(deviceContext);
 
-void
-Skybox::destroy() {
-    // Liberar memoria del modelo 3D
-    if (m_cubeModel) {
-        delete m_cubeModel;
-        m_cubeModel = nullptr;
-    }
+	// 3) Limpia t0 para evitar mismatch por shaders 2D que usen t0
+	ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
+	deviceContext.m_deviceContext->PSSetShaderResources(10, 1, nullSRV);
 
-    // Llamar a los destroy de los componentes del motor
-    m_shaderProgram.destroy();
-    m_constantBuffer.destroy();
-    m_samplerState.destroy();
-    m_skyboxTexture.destroy();
-
-    // El TSharedPointer de m_skybox se limpia automáticamente
+	// 5) Unbind t10
+	deviceContext.m_deviceContext->PSSetShaderResources(0, 1, nullSRV);
 }

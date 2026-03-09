@@ -63,37 +63,22 @@ BaseApp::init() {
 
     // --- Infraestructura D3D11 ---
     hr = m_swapChain.init(m_device, m_deviceContext, m_backBuffer, m_window);
-    if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize SwapChain. HRESULT: " + std::to_string(hr)).c_str());
-        return hr;
-    }
+    if (FAILED(hr)) return hr;
 
     hr = m_renderTargetView.init(m_device, m_backBuffer, DXGI_FORMAT_R8G8B8A8_UNORM);
-    if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize RenderTargetView. HRESULT: " + std::to_string(hr)).c_str());
-        return hr;
-    }
+    if (FAILED(hr)) return hr;
 
     hr = m_depthStencil.init(m_device, m_window.m_width, m_window.m_height,
         DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_DEPTH_STENCIL, 4, 0);
-    if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize DepthStencil. HRESULT: " + std::to_string(hr)).c_str());
-        return hr;
-    }
+    if (FAILED(hr)) return hr;
 
     hr = m_depthStencilView.init(m_device, m_depthStencil, DXGI_FORMAT_D24_UNORM_S8_UINT);
-    if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize DepthStencilView. HRESULT: " + std::to_string(hr)).c_str());
-        return hr;
-    }
-
-    m_d3dReady = true;
+    if (FAILED(hr)) return hr;
 
     hr = m_viewport.init(m_window);
-    if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize Viewport. HRESULT: " + std::to_string(hr)).c_str());
-        return hr;
-    }
+    if (FAILED(hr)) return hr;
+
+    m_d3dReady = true;
 
     // --- Cargar Skybox ---
     std::array<std::string, 6> faces = {
@@ -108,7 +93,7 @@ BaseApp::init() {
     if (!m_cyberGun.isNull()) {
         m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX);
 
-        // Carga de texturas PBR para el MA5C con control de errores
+        // Carga de texturas PBR para el MA5C
         if (FAILED(m_AlbedoSRV.init(m_device, "Assets/MA5C_Albedo.png", PNG)) ||
             FAILED(m_NormalSRV.init(m_device, "Assets/MA5C_Normal.png", PNG)) ||
             FAILED(m_MetallicSRV.init(m_device, "Assets/MA5C_Metallic.png", PNG)) ||
@@ -130,22 +115,18 @@ BaseApp::init() {
             EU::Vector3(0.0f, 0.0f, 0.0f),
             EU::Vector3(1.0f, 1.0f, 1.0f));
     }
-    else {
-        ERROR("Main", "InitDevice", "Failed to create MA5C Actor.");
-        return E_FAIL;
-    }
 
     for (auto& actor : m_actors) m_sceneGraph.addEntity(actor.get());
 
-    // --- Shader PorygonEngine (Mantenido) ---
-    std::vector<D3D11_INPUT_ELEMENT_DESC> layout;
-    layout.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-    layout.push_back({ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-    layout.push_back({ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-    layout.push_back({ "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-    layout.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+    // --- Shader PorygonEngine (Mantenido con LayoutBuilder) ---
+    LayoutBuilder builder;
+    builder.Add("POSITION", DXGI_FORMAT_R32G32B32_FLOAT)
+        .Add("NORMAL", DXGI_FORMAT_R32G32B32_FLOAT)
+        .Add("TANGENT", DXGI_FORMAT_R32G32B32_FLOAT)
+        .Add("BITANGENT", DXGI_FORMAT_R32G32B32_FLOAT)
+        .Add("TEXCOORD", DXGI_FORMAT_R32G32_FLOAT);
 
-    hr = m_shaderProgram.init(m_device, "PorygonEngine.fx", layout);
+    hr = m_shaderProgram.init(m_device, "PorygonEngine.fx", builder);
     if (FAILED(hr)) return hr;
 
     hr = m_constantBuffer.init(m_device, sizeof(CBMain));
@@ -165,6 +146,9 @@ BaseApp::init() {
     hr = m_defaultDepthStencil.init(m_device, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS);
     if (FAILED(hr)) return hr;
 
+    hr = m_editorViewportPass.init(m_device, 1280, 720);
+    if (FAILED(hr)) return hr;
+
     return S_OK;
 }
 
@@ -172,14 +156,41 @@ void BaseApp::update(float deltaTime) {
     // Update User Interface
     m_gui.update(m_viewport, m_window);
 
+    // Nueva lógica de Viewport Panel
+    m_gui.drawViewportPanel(m_editorViewportPass.getSRV());
+
     if (!m_actors.empty()) {
         unsigned int idx = m_gui.selectedActorIndex;
         if (idx < m_actors.size()) {
             m_gui.inspectorGeneral(m_actors[idx]);
-            // CORRECCIÓN: Se envían matrices explícitas para evitar error de conversión
-            m_gui.editTransform(m_camera.getView(), m_camera.getProj(), m_actors[idx]);
+            m_gui.editTransform(m_camera, m_window, m_actors[idx]);
         }
         m_gui.outliner(m_actors);
+    }
+
+    // --- Lógica de redimensionamiento estable ---
+    unsigned int desiredW = static_cast<unsigned int>(m_gui.m_viewportSize.x);
+    unsigned int desiredH = static_cast<unsigned int>(m_gui.m_viewportSize.y);
+    const unsigned int kMinViewportSize = 64;
+
+    if (desiredW < kMinViewportSize) desiredW = kMinViewportSize;
+    if (desiredH < kMinViewportSize) desiredH = kMinViewportSize;
+
+    if (desiredW != m_lastRequestedViewportWidth || desiredH != m_lastRequestedViewportHeight) {
+        m_lastRequestedViewportWidth = desiredW;
+        m_lastRequestedViewportHeight = desiredH;
+        m_viewportResizeStableFrames = 0;
+    }
+    else {
+        m_viewportResizeStableFrames++;
+    }
+
+    if (m_viewportResizeStableFrames >= 2) {
+        if (desiredW != m_editorViewportPass.getWidth() || desiredH != m_editorViewportPass.getHeight()) {
+            m_editorViewportResizePending = true;
+            m_pendingViewportWidth = desiredW;
+            m_pendingViewportHeight = desiredH;
+        }
     }
 
     m_camera.updateViewMatrix();
@@ -187,7 +198,6 @@ void BaseApp::update(float deltaTime) {
     XMStoreFloat4x4(&m_constantBufferStruct.Projection, XMMatrixTranspose(m_camera.getProj()));
     m_constantBufferStruct.CameraPos = m_camera.getPosition();
 
-    // Controles de luz en GUI
     m_gui.vec3Control("Light Direction", &m_constantBufferStruct.LightDir.x, 0.1f);
     m_gui.vec3Control("Light Color", &m_constantBufferStruct.LightColor.x, 0.1f);
 
@@ -197,29 +207,46 @@ void BaseApp::update(float deltaTime) {
 }
 
 void BaseApp::render() {
-    float ClearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
-    m_renderTargetView.render(m_deviceContext, m_depthStencilView, 1, ClearColor);
+    handleEditorViewportResize();
 
-    m_viewport.render(m_deviceContext);
-    m_depthStencilView.render(m_deviceContext);
+    // Renderizado al Editor Viewport Pass
+    const float viewportClear[4] = { 0.10f, 0.10f, 0.10f, 1.0f };
+    m_editorViewportPass.begin(m_deviceContext, viewportClear);
+    m_editorViewportPass.setViewport(m_deviceContext);
+    m_editorViewportPass.clearDepth(m_deviceContext);
 
     // 1) SKYBOX PASS
     m_skybox.render(m_deviceContext);
 
-    // 2) RESTAURAR ESTADOS + PIPELINE DE ESCENA
+    // 2) PIPELINE DE ESCENA
     m_defaultRasterizer.render(m_deviceContext);
     m_defaultDepthStencil.render(m_deviceContext, 0, false);
-
     m_shaderProgram.render(m_deviceContext);
     m_constantBuffer.render(m_deviceContext, 0, 1, true);
 
     // 3) SCENE PASS
     m_sceneGraph.render(m_deviceContext);
 
-    // 4) GUI
-    m_gui.render();
+    // 4) Volver al backbuffer principal para la GUI
+    float ClearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+    m_renderTargetView.render(m_deviceContext, m_depthStencilView, 1, ClearColor);
+    m_viewport.render(m_deviceContext);
+    m_depthStencilView.render(m_deviceContext);
 
+    m_gui.render();
     m_swapChain.present();
+}
+
+void BaseApp::handleEditorViewportResize() {
+    if (!m_editorViewportResizePending) return;
+
+    m_deviceContext.m_deviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+    EditorViewportPass newPass;
+    if (SUCCEEDED(newPass.init(m_device, m_pendingViewportWidth, m_pendingViewportHeight))) {
+        m_editorViewportPass.swap(newPass);
+    }
+    m_editorViewportResizePending = false;
 }
 
 void BaseApp::onResize(UINT newW, UINT newH) {
@@ -236,17 +263,14 @@ void BaseApp::onResize(UINT newW, UINT newH) {
     m_depthStencil.destroy();
     m_backBuffer.destroy();
 
-    HRESULT hr = m_swapChain.resizeBuffers(newW, newH);
-    if (FAILED(hr)) return;
-
-    m_swapChain.getBackBuffer(m_backBuffer);
-
-    m_renderTargetView.init(m_device, m_backBuffer, DXGI_FORMAT_R8G8B8A8_UNORM);
-    m_depthStencil.init(m_device, newW, newH, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_DEPTH_STENCIL, 4, 0);
-    m_depthStencilView.init(m_device, m_depthStencil, DXGI_FORMAT_D24_UNORM_S8_UINT);
-
-    m_viewport.init(m_window);
-    m_camera.setLens(XM_PIDIV4, newW / (float)newH, 0.01f, 1000.0f);
+    if (SUCCEEDED(m_swapChain.resizeBuffers(newW, newH))) {
+        m_swapChain.getBackBuffer(m_backBuffer);
+        m_renderTargetView.init(m_device, m_backBuffer, DXGI_FORMAT_R8G8B8A8_UNORM);
+        m_depthStencil.init(m_device, newW, newH, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_DEPTH_STENCIL, 4, 0);
+        m_depthStencilView.init(m_device, m_depthStencil, DXGI_FORMAT_D24_UNORM_S8_UINT);
+        m_viewport.init(m_window);
+        m_camera.setLens(XM_PIDIV4, newW / (float)newH, 0.01f, 1000.0f);
+    }
 }
 
 LRESULT BaseApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -275,6 +299,7 @@ void BaseApp::destroy() {
     if (m_deviceContext.m_deviceContext) m_deviceContext.m_deviceContext->ClearState();
     if (m_model) { delete m_model; m_model = nullptr; }
     m_sceneGraph.destroy();
+    m_editorViewportPass.destroy();
     m_AlbedoSRV.destroy(); m_NormalSRV.destroy(); m_MetallicSRV.destroy();
     m_RoughnessSRV.destroy(); m_AOSRV.destroy();
     m_shaderProgram.destroy();

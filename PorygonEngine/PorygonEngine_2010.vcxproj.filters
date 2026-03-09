@@ -149,6 +149,12 @@
     <ClCompile Include="include\Skybox.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="include\EngineUtilities\Utilities\EditorViewportPass.h">
+      <Filter>Include\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="source\EditorViewportPass.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">

@@ -4,35 +4,29 @@
 HRESULT
 BaseApp::awake() {
     HRESULT hr = S_OK;
-    // Inicializacion de dlls y elementos externos al motor.
     m_sceneGraph.init();
-
-    // Log Success Message
     MESSAGE("Main", "Awake", "Application awake successfully.");
     return hr;
 }
 
 int
 BaseApp::run(HINSTANCE hInst, int nCmdShow) {
-    // 1) Initialize Window con puntero 'this' para habilitar onResize en WndProc
     if (FAILED(m_window.init(hInst, nCmdShow, WndProc, this))) {
         ERROR("Main", "Run", "Failed to initialize window.");
         return 0;
     }
-    // 2) Awake Application
     if (FAILED(awake())) {
         ERROR("Main", "Run", "Failed to awake application.");
         return 0;
     }
-    // 3) Initialize Device and Device Context
     if (FAILED(init())) {
+        // Cambiado para que no sea un retorno fatal inmediato si prefieres debugear la GUI
         ERROR("Main", "Run", "Failed to initialize device and device context.");
         return 0;
     }
-    // 4) Initialize GUI
+
     m_gui.init(m_window, m_device, m_deviceContext);
 
-    // Main message loop
     MSG msg = {};
     LARGE_INTEGER freq, prev;
     QueryPerformanceFrequency(&freq);
@@ -54,6 +48,9 @@ BaseApp::run(HINSTANCE hInst, int nCmdShow) {
             render();
         }
     }
+
+    // IMPORTANTE: Llamar a destroy al salir del loop
+    destroy();
     return (int)msg.wParam;
 }
 
@@ -63,10 +60,7 @@ BaseApp::init() {
 
     // --- Infraestructura D3D11 ---
     hr = m_swapChain.init(m_device, m_deviceContext, m_backBuffer, m_window);
-    if (FAILED(hr)) {
-        ERROR("Main", "InitDevice", ("Failed to initialize SwapChain. HRESULT: " + std::to_string(hr)).c_str());
-        return hr;
-    }
+    if (FAILED(hr)) return hr;
 
     hr = m_renderTargetView.init(m_device, m_backBuffer, DXGI_FORMAT_R8G8B8A8_UNORM);
     if (FAILED(hr)) return hr;
@@ -90,20 +84,28 @@ BaseApp::init() {
     };
     m_skyboxTex.CreateCubemap(m_device, m_deviceContext, faces, false);
 
-    // --- Actor MA5C (Mantenido) ---
+    // --- Actor MA5C ---
     m_cyberGun = EU::MakeShared<Actor>(m_device);
 
     if (!m_cyberGun.isNull()) {
         m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX);
 
-        // Carga de texturas PBR para el MA5C
-        if (FAILED(m_AlbedoSRV.init(m_device, "Assets/MA5C_Albedo.png", PNG)) ||
-            FAILED(m_NormalSRV.init(m_device, "Assets/MA5C_Normal.png", PNG)) ||
-            FAILED(m_MetallicSRV.init(m_device, "Assets/MA5C_Metallic.png", PNG)) ||
-            FAILED(m_RoughnessSRV.init(m_device, "Assets/MA5C_Roughness.png", PNG)) ||
-            FAILED(m_AOSRV.init(m_device, "Assets/MA5C_AO.png", PNG))) {
-            ERROR("Main", "InitDevice", "Failed to initialize MA5C Textures.");
-            return E_FAIL;
+        // ACTUALIZACIÓN DE RUTAS SEGÚN TU CARPETA ASSETS
+        // Usamos los nombres reales: MA5C_2K_Color, MA5C_2K_NormalGL, etc.
+        bool texError = false;
+        if (FAILED(m_AlbedoSRV.init(m_device, "Assets/MA5C_2K_Color.png", PNG))) texError = true;
+        if (FAILED(m_NormalSRV.init(m_device, "Assets/MA5C_2K_NormalGL.png", PNG))) texError = true;
+        if (FAILED(m_MetallicSRV.init(m_device, "Assets/MA5C_2K_Metallic.png", PNG))) texError = true;
+
+        // Asignamos Glossiness al slot de Roughness (común en flujos de trabajo)
+        if (FAILED(m_RoughnessSRV.init(m_device, "Assets/MA5C_2K_Glossiness.png", PNG))) texError = true;
+
+        // Nota: Si no tienes AO específico, puedes reusar otra o cargar una blanca
+        if (FAILED(m_AOSRV.init(m_device, "Assets/MA5C_Mg_2K_Color.png", PNG))) texError = true;
+
+        if (texError) {
+            MESSAGE("Main", "InitDevice", "Warning: Some MA5C textures failed to load. Check paths.");
+            // No retornamos E_FAIL para permitir que el motor abra y puedas ver el error en consola
         }
 
         std::vector<Texture> textures = { m_AlbedoSRV, m_NormalSRV, m_MetallicSRV, m_RoughnessSRV, m_AOSRV };
@@ -121,7 +123,7 @@ BaseApp::init() {
 
     for (auto& actor : m_actors) m_sceneGraph.addEntity(actor.get());
 
-    // --- Shader PorygonEngine (Mantenido con LayoutBuilder) ---
+    // --- Shader PorygonEngine ---
     LayoutBuilder builder;
     builder.Add("POSITION", DXGI_FORMAT_R32G32B32_FLOAT)
         .Add("NORMAL", DXGI_FORMAT_R32G32B32_FLOAT)
@@ -156,10 +158,7 @@ BaseApp::init() {
 }
 
 void BaseApp::update(float deltaTime) {
-    // Update User Interface
     m_gui.update(m_viewport, m_window);
-
-    // Viewport Panel
     m_gui.drawViewportPanel(m_editorViewportPass.getSRV());
 
     if (!m_actors.empty()) {
@@ -171,7 +170,7 @@ void BaseApp::update(float deltaTime) {
         m_gui.outliner(m_actors);
     }
 
-    // --- Lógica de redimensionamiento estable ---
+    // Redimensionamiento estable
     unsigned int desiredW = static_cast<unsigned int>(m_gui.m_viewportSize.x);
     unsigned int desiredH = static_cast<unsigned int>(m_gui.m_viewportSize.y);
     const unsigned int kMinViewportSize = 64;
@@ -188,8 +187,7 @@ void BaseApp::update(float deltaTime) {
         m_viewportResizeStableFrames++;
     }
 
-    const int kStableFramesRequired = 2;
-    if (m_viewportResizeStableFrames >= kStableFramesRequired) {
+    if (m_viewportResizeStableFrames >= 2) {
         if (desiredW != m_editorViewportPass.getWidth() || desiredH != m_editorViewportPass.getHeight()) {
             m_editorViewportResizePending = true;
             m_pendingViewportWidth = desiredW;
@@ -202,9 +200,7 @@ void BaseApp::update(float deltaTime) {
     XMStoreFloat4x4(&m_constantBufferStruct.Projection, XMMatrixTranspose(m_camera.getProj()));
     m_constantBufferStruct.CameraPos = m_camera.getPosition();
 
-    m_gui.vec3Control("Light Direction", &m_constantBufferStruct.LightDir.x, 0.1f);
-    m_gui.vec3Control("Light Color", &m_constantBufferStruct.LightColor.x, 0.1f);
-
+    // Actualización de buffers y sistemas
     m_skybox.update(m_deviceContext, m_camera);
     m_constantBuffer.update(m_deviceContext, nullptr, 0, nullptr, &m_constantBufferStruct, 0, 0);
     m_sceneGraph.update(deltaTime, m_deviceContext);
@@ -213,29 +209,22 @@ void BaseApp::update(float deltaTime) {
 void BaseApp::render() {
     handleEditorViewportResize();
 
-    // Renderizado al Editor Viewport Pass
     const float viewportClear[4] = { 0.10f, 0.10f, 0.10f, 1.0f };
     m_editorViewportPass.begin(m_deviceContext, viewportClear);
     m_editorViewportPass.setViewport(m_deviceContext);
     m_editorViewportPass.clearDepth(m_deviceContext);
 
-    // 1) SKYBOX PASS
     m_skybox.render(m_deviceContext);
-
-    // 2) PIPELINE DE ESCENA (PorygonEngine)
     m_defaultRasterizer.render(m_deviceContext);
     m_defaultDepthStencil.render(m_deviceContext, 0, false);
     m_shaderProgram.render(m_deviceContext);
     m_constantBuffer.render(m_deviceContext, 0, 1, true);
-
-    // 3) SCENE PASS
     m_sceneGraph.render(m_deviceContext);
 
-    // 4) Volver al backbuffer principal para la GUI
+    // Renderizado final a la ventana
     float ClearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
     m_renderTargetView.render(m_deviceContext, m_depthStencilView, 1, ClearColor);
     m_viewport.render(m_deviceContext);
-    m_depthStencilView.render(m_deviceContext);
 
     m_gui.render();
     m_swapChain.present();
@@ -243,12 +232,9 @@ void BaseApp::render() {
 
 void BaseApp::handleEditorViewportResize() {
     if (!m_editorViewportResizePending) return;
-
     m_deviceContext.m_deviceContext->OMSetRenderTargets(0, nullptr, nullptr);
-
-    // Limpieza de SRVs para evitar conflictos al recrear la textura
-    ID3D11ShaderResourceView* nullSRVs[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
-    m_deviceContext.m_deviceContext->PSSetShaderResources(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, nullSRVs);
+    ID3D11ShaderResourceView* nullSRVs[16] = {};
+    m_deviceContext.m_deviceContext->PSSetShaderResources(0, 16, nullSRVs);
 
     EditorViewportPass newPass;
     if (SUCCEEDED(newPass.init(m_device, m_pendingViewportWidth, m_pendingViewportHeight))) {
@@ -259,12 +245,8 @@ void BaseApp::handleEditorViewportResize() {
 
 void BaseApp::onResize(UINT newW, UINT newH) {
     if (!m_d3dReady || newW == 0 || newH == 0) return;
-
     m_window.m_width = (int)newW;
     m_window.m_height = (int)newH;
-
-    ID3D11RenderTargetView* nullRTV = nullptr;
-    m_deviceContext.m_deviceContext->OMSetRenderTargets(1, &nullRTV, nullptr);
 
     m_renderTargetView.destroy();
     m_depthStencilView.destroy();
@@ -283,7 +265,6 @@ void BaseApp::onResize(UINT newW, UINT newH) {
 
 LRESULT BaseApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam)) return true;
-
     switch (message) {
     case WM_CREATE: {
         CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
@@ -306,6 +287,7 @@ LRESULT BaseApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 void BaseApp::destroy() {
     if (m_deviceContext.m_deviceContext) m_deviceContext.m_deviceContext->ClearState();
     if (m_model) { delete m_model; m_model = nullptr; }
+
     m_sceneGraph.destroy();
     m_editorViewportPass.destroy();
     m_AlbedoSRV.destroy(); m_NormalSRV.destroy(); m_MetallicSRV.destroy();

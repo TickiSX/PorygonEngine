@@ -63,7 +63,10 @@ BaseApp::init() {
 
     // --- Infraestructura D3D11 ---
     hr = m_swapChain.init(m_device, m_deviceContext, m_backBuffer, m_window);
-    if (FAILED(hr)) return hr;
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to initialize SwapChain. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
 
     hr = m_renderTargetView.init(m_device, m_backBuffer, DXGI_FORMAT_R8G8B8A8_UNORM);
     if (FAILED(hr)) return hr;
@@ -156,7 +159,7 @@ void BaseApp::update(float deltaTime) {
     // Update User Interface
     m_gui.update(m_viewport, m_window);
 
-    // Nueva lógica de Viewport Panel
+    // Viewport Panel
     m_gui.drawViewportPanel(m_editorViewportPass.getSRV());
 
     if (!m_actors.empty()) {
@@ -185,7 +188,8 @@ void BaseApp::update(float deltaTime) {
         m_viewportResizeStableFrames++;
     }
 
-    if (m_viewportResizeStableFrames >= 2) {
+    const int kStableFramesRequired = 2;
+    if (m_viewportResizeStableFrames >= kStableFramesRequired) {
         if (desiredW != m_editorViewportPass.getWidth() || desiredH != m_editorViewportPass.getHeight()) {
             m_editorViewportResizePending = true;
             m_pendingViewportWidth = desiredW;
@@ -218,7 +222,7 @@ void BaseApp::render() {
     // 1) SKYBOX PASS
     m_skybox.render(m_deviceContext);
 
-    // 2) PIPELINE DE ESCENA
+    // 2) PIPELINE DE ESCENA (PorygonEngine)
     m_defaultRasterizer.render(m_deviceContext);
     m_defaultDepthStencil.render(m_deviceContext, 0, false);
     m_shaderProgram.render(m_deviceContext);
@@ -241,6 +245,10 @@ void BaseApp::handleEditorViewportResize() {
     if (!m_editorViewportResizePending) return;
 
     m_deviceContext.m_deviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+    // Limpieza de SRVs para evitar conflictos al recrear la textura
+    ID3D11ShaderResourceView* nullSRVs[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
+    m_deviceContext.m_deviceContext->PSSetShaderResources(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, nullSRVs);
 
     EditorViewportPass newPass;
     if (SUCCEEDED(newPass.init(m_device, m_pendingViewportWidth, m_pendingViewportHeight))) {
@@ -302,9 +310,15 @@ void BaseApp::destroy() {
     m_editorViewportPass.destroy();
     m_AlbedoSRV.destroy(); m_NormalSRV.destroy(); m_MetallicSRV.destroy();
     m_RoughnessSRV.destroy(); m_AOSRV.destroy();
+    m_defaultRasterizer.destroy();
+    m_defaultDepthStencil.destroy();
     m_shaderProgram.destroy();
-    m_renderTargetView.destroy(); m_swapChain.destroy();
-    m_gui.destroy(); m_device.destroy();
+    m_depthStencil.destroy();
+    m_depthStencilView.destroy();
+    m_renderTargetView.destroy();
+    m_swapChain.destroy();
+    m_gui.destroy();
+    m_device.destroy();
     m_backBuffer.destroy();
     m_deviceContext.destroy();
 }

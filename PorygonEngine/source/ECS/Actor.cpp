@@ -93,7 +93,7 @@ Actor::render(DeviceContext& deviceContext) {
 	{
 		m_vertexBuffers[i].render(deviceContext, 0, 1);
 		m_indexBuffers[i].render(deviceContext, 0, 1, false, DXGI_FORMAT_R32_UINT);
-		m_modelBuffer.render(deviceContext, 2, 1, true);
+		m_modelBuffer.render(deviceContext, 1, 1, true);
 
 		// Limpieza por mesh (evita herencias)
 		ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
@@ -101,7 +101,9 @@ Actor::render(DeviceContext& deviceContext) {
 
 		// Bind correcto por mesh
 		if (i < m_textures.size()) {
-			m_textures[i].render(deviceContext, 0, 1);   // albedo mesh i
+			for (int k = 0; k < m_textures.size(); k++) {
+				m_textures[k].render(deviceContext, k, 1);   // albedo mesh i
+			}
 		}
 		// else: se queda null
 		deviceContext.DrawIndexed(m_meshes[i].m_numIndex, 0, 0);

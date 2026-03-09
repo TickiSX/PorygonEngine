@@ -1,6 +1,7 @@
 ﻿#include "EngineUtilities/Utilities/Skybox.h"
 #include "Device.h"
 #include "DeviceContext.h"
+#include "EngineUtilities/Utilities/LayoutBuilder.h"
 
 
 HRESULT
@@ -54,20 +55,13 @@ Skybox::init(Device& device, DeviceContext* deviceContext, Texture& cubemap) {
 
 
 	// Define the input layout
-	std::vector<D3D11_INPUT_ELEMENT_DESC> Layout;
-	D3D11_INPUT_ELEMENT_DESC position;
-	position.SemanticName = "POSITION";
-	position.SemanticIndex = 0;
-	position.Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	position.InputSlot = 0;
-	position.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT /*0*/;
-	position.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	position.InstanceDataStepRate = 0;
-	Layout.push_back(position);
+	LayoutBuilder builder;
+
+	builder.Add("POSITION", DXGI_FORMAT_R32G32B32_FLOAT);
 
 	HRESULT hr = S_OK;
 	// Create the Shader Program
-	hr = m_shaderProgram.init(device, "Skybox.hlsl", Layout);
+	hr = m_shaderProgram.init(device, "Skybox.hlsl", builder);
 	if (FAILED(hr)) {
 		ERROR("Skybox", "init",
 			("Failed to initialize ShaderProgram. HRESULT: " + std::to_string(hr)).c_str());
@@ -105,8 +99,17 @@ Skybox::init(Device& device, DeviceContext* deviceContext, Texture& cubemap) {
 	return S_OK;
 }
 
+void Skybox::update(DeviceContext& deviceContext, Camera& camera) {
+	// 2) View sin traslaci�n + VP (SOLO una transpuesta al final)
+	XMMATRIX viewNoT = camera.GetViewNoTranslation();
+	XMMATRIX vp = viewNoT * camera.getProj();
+	CBSkybox cb{};
+	cb.mviewProj = XMMatrixTranspose(vp);
+	m_constantBuffer.update(deviceContext, nullptr, 0, nullptr, &cb, 0, 0);
+}
+
 void
-Skybox::render(DeviceContext& deviceContext, Camera& camera) {
+Skybox::render(DeviceContext& deviceContext) {
 	// Guard: si no se inicializ� bien, no intentes renderizar
 	if (!m_cubeModel || !m_skyboxTexture.m_textureFromImg) return;
 
@@ -114,12 +117,6 @@ Skybox::render(DeviceContext& deviceContext, Camera& camera) {
 	m_rasterizerState.render(deviceContext);
 	m_depthStencilState.render(deviceContext, 0, false);
 
-	// 2) View sin traslaci�n + VP (SOLO una transpuesta al final)
-	XMMATRIX viewNoT = camera.GetViewNoTranslation();
-	XMMATRIX vp = viewNoT * camera.getProj();
-	CBSkybox cb{};
-	cb.mviewProj = XMMatrixTranspose(vp);
-	m_constantBuffer.update(deviceContext, nullptr, 0, nullptr, &cb, 0, 0);
 	m_constantBuffer.render(deviceContext, 0, 1);
 
 	// 3) Shader + sampler (slot 10)

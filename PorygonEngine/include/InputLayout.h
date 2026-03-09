@@ -1,21 +1,20 @@
-#pragma once
-
+ï»¿#pragma once
 #include "Prerequisites.h"
-#include <vector>
 
-// Forward Declarations
 class Device;
 class DeviceContext;
 
 /**
  * @class InputLayout
- * @brief Define la estructura de los datos de vértices para el pipeline gráfico.
+ * @brief Encapsula un @c ID3D11InputLayout que describe el formato de los vï¿½rtices para el pipeline de entrada.
  *
- * El Input Layout es un objeto de DirectX que actúa como un "mapa" o "instrucciones de decodificación".
- * Le dice a la GPU cómo interpretar los bits crudos almacenados en el Vertex Buffer
- * (Posición, Normales, UVs, Color) y cómo mapearlos a las variables de entrada del Vertex Shader.
+ * Un Input Layout en Direct3D 11 define cï¿½mo se interpretan los datos de un Vertex Buffer
+ * (posiciï¿½n, normales, UVs, colores, etc.) y cï¿½mo se asignan a las entradas de un Vertex Shader.
+ *
+ * Esta clase administra la creaciï¿½n, uso y destrucciï¿½n del recurso @c ID3D11InputLayout.
  */
-class InputLayout {
+class
+    InputLayout {
 public:
     /**
      * @brief Constructor por defecto.
@@ -24,47 +23,67 @@ public:
 
     /**
      * @brief Destructor por defecto.
+     * @details No libera automï¿½ticamente el recurso COM; llamar a destroy().
      */
     ~InputLayout() = default;
 
     /**
-     * @brief Inicializa y crea el Input Layout en la GPU.
+     * @brief Inicializa el Input Layout a partir de una descripciï¿½n y bytecode de Vertex Shader.
      *
-     * Valida que la descripción de los elementos coincida con la firma de entrada
-     * del Vertex Shader compilado.
+     * Crea un @c ID3D11InputLayout utilizando un arreglo de @c D3D11_INPUT_ELEMENT_DESC
+     * y el bytecode compilado de un Vertex Shader que define la firma de entrada.
      *
-     * @param device           Referencia al dispositivo para crear el recurso.
-     * @param Layout           Vector de descriptores (D3D11_INPUT_ELEMENT_DESC) que definen el formato (ej. Position, TexCoord).
-     * @param VertexShaderData Blob binario del Vertex Shader compilado (necesario para la validación).
-     * @return HRESULT         S_OK si la creación fue exitosa.
+     * @param device            Dispositivo con el que se crea el recurso.
+     * @param Layout            Vector con la descripciï¿½n de los elementos de entrada (semï¿½nticas, formato, offset, etc.).
+     * @param VertexShaderData  Bytecode compilado del Vertex Shader que contiene la firma de entrada.
+     * @return @c S_OK si la creaciï¿½n fue exitosa; cï¿½digo @c HRESULT en caso de error.
+     *
+     * @post Si retorna @c S_OK, @c m_inputLayout != nullptr.
      */
-    HRESULT init(Device& device,
-        std::vector<D3D11_INPUT_ELEMENT_DESC>& Layout,
-        ID3DBlob* VertexShaderData);
+    HRESULT
+        init(Device& device,
+            const D3D11_INPUT_ELEMENT_DESC* layoutDesc,
+            UINT layoutCount,
+            ID3DBlob* vertexShaderData);
 
     /**
-     * @brief Actualiza la lógica del layout.
-     * @note Generalmente no se requiere actualización para este recurso estático.
+     * @brief Actualiza parï¿½metros internos del Input Layout.
+     *
+     * Mï¿½todo de marcador, ï¿½til si en el futuro se desea recrear o modificar dinï¿½micamente
+     * el Input Layout.
+     *
+     * @note Actualmente no realiza ninguna operaciï¿½n.
      */
-    void update();
+    void
+        update();
 
     /**
-     * @brief Vincula el Input Layout al pipeline (Etapa Input Assembler).
+     * @brief Aplica el Input Layout al contexto de dispositivo.
      *
-     * Debe llamarse antes de dibujar la malla para que la GPU sepa cómo leer los vértices.
+     * Asigna el @c ID3D11InputLayout al pipeline grï¿½fico a travï¿½s de
+     * @c ID3D11DeviceContext::IASetInputLayout.
      *
-     * @param deviceContext Contexto del dispositivo.
+     * @param deviceContext Contexto donde se establecerï¿½ el Input Layout.
+     *
+     * @pre @c m_inputLayout debe haberse creado con init().
      */
-    void render(DeviceContext& deviceContext);
+    void
+        render(DeviceContext& deviceContext);
 
     /**
-     * @brief Libera el recurso ID3D11InputLayout.
+     * @brief Libera el recurso @c ID3D11InputLayout y deja la instancia en estado no inicializado.
+     *
+     * Idempotente: puede llamarse mï¿½ltiples veces de forma segura.
+     *
+     * @post @c m_inputLayout == nullptr.
      */
-    void destroy();
+    void
+        destroy();
 
 public:
     /**
-     * @brief Puntero nativo al recurso de DirectX.
+     * @brief Recurso COM de Direct3D 11 que representa el Input Layout.
+     * @details Vï¿½lido tras init(); @c nullptr despuï¿½s de destroy().
      */
     ID3D11InputLayout* m_inputLayout = nullptr;
 };

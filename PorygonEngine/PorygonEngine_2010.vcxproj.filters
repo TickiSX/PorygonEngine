@@ -295,6 +295,9 @@
     <ClInclude Include="include\RasterizerState.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="include\EngineUtilities\Utilities\LayoutBuilder.h">
+      <Filter>Include\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="bin\x64\PorygonEngine.fx">

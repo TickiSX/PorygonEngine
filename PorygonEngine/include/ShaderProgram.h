@@ -1,26 +1,21 @@
-#pragma once
-
+ï»¿#pragma once
 #include "Prerequisites.h"
 #include "InputLayout.h"
 
-// Forward Declarations
 class Device;
 class DeviceContext;
+class LayoutBuilder;
 
 /**
  * @class ShaderProgram
- * @brief Gestiona un par de shaders (Vertex y Pixel) y su diseño de entrada.
+ * @brief Encapsula la creaciï¿½n, compilaciï¿½n y uso de Vertex Shader y Pixel Shader en Direct3D 11.
  *
- * En DirectX 11, un "Shader Program" generalmente se refiere a la combinación
- * de un Vertex Shader (que procesa geometría) y un Pixel Shader (que procesa color/luz),
- * junto con el Input Layout que define cómo fluyen los datos hacia ellos.
- *
- * Esta clase encapsula:
- * - Compilación de código HLSL desde archivo.
- * - Creación de las interfaces ID3D11VertexShader y ID3D11PixelShader.
- * - Gestión de los blobs de memoria (bytecode).
+ * Esta clase administra el ciclo de vida de un conjunto de shaders (VS y PS),
+ * incluyendo su compilaciï¿½n desde archivo, creaciï¿½n en el dispositivo y vinculaciï¿½n
+ * al pipeline. Ademï¿½s, maneja el Input Layout asociado al Vertex Shader.
  */
-class ShaderProgram {
+class
+    ShaderProgram {
 public:
     /**
      * @brief Constructor por defecto.
@@ -29,118 +24,149 @@ public:
 
     /**
      * @brief Destructor por defecto.
+     * @details No libera automï¿½ticamente los recursos COM; llamar a destroy().
      */
     ~ShaderProgram() = default;
 
     /**
-     * @brief Inicializa el programa de shaders completo.
+     * @brief Inicializa el programa de shaders desde un archivo HLSL.
      *
-     * Compila los shaders (VS y PS) desde el archivo especificado y crea el Input Layout
-     * basado en la descripción proporcionada.
+     * Compila y crea los shaders (VS y PS) definidos en el archivo indicado,
+     * ademï¿½s de crear el Input Layout con la descripciï¿½n proporcionada.
      *
-     * @param device   Dispositivo para la creación de recursos.
-     * @param fileName Nombre del archivo .fx o .hlsl que contiene el código fuente.
-     * @param Layout   Vector que describe los elementos de entrada de los vértices (Posición, UV, Normal, etc.).
-     * @return HRESULT S_OK si la compilación y creación fueron exitosas.
+     * @param device   Dispositivo con el que se crearï¿½n los recursos.
+     * @param fileName Nombre del archivo HLSL que contiene los shaders.
+     * @param Layout   Vector con la descripciï¿½n de los elementos de entrada (para VS).
+     * @return @c S_OK si fue exitoso; cï¿½digo @c HRESULT en caso de error.
+     *
+     * @post Si retorna @c S_OK, los punteros a shaders y el input layout serï¿½n vï¿½lidos.
      */
-    HRESULT init(Device& device,
-        const std::string& fileName,
-        std::vector<D3D11_INPUT_ELEMENT_DESC> Layout);
+    HRESULT
+        init(Device& device, const std::string& fileName, LayoutBuilder layoutBuilder);
 
     /**
-     * @brief Actualiza la lógica del shader (generalmente vacío).
+     * @brief Actualiza parï¿½metros internos de los shaders.
+     *
+     * Mï¿½todo de marcador para futuras extensiones (por ejemplo,
+     * recompilar shaders en caliente).
+     *
+     * @note Actualmente no realiza ninguna operaciï¿½n.
      */
-    void update();
+    void
+        update();
 
     /**
-     * @brief Activa ambos shaders (Vertex y Pixel) y el Input Layout en el pipeline.
+     * @brief Aplica el Vertex Shader, Pixel Shader e Input Layout al pipeline.
      *
-     * @param deviceContext Contexto del dispositivo.
+     * Llama a @c VSSetShader, @c PSSetShader y asigna el input layout
+     * al contexto.
+     *
+     * @param deviceContext Contexto donde se aplicarï¿½ el programa de shaders.
+     *
+     * @pre Los shaders deben haberse creado con init() o CreateShader().
      */
-    void render(DeviceContext& deviceContext);
+    void
+        render(DeviceContext& deviceContext);
 
     /**
-     * @brief Activa un tipo específico de shader (solo VS o solo PS).
+     * @brief Aplica ï¿½nicamente un shader especï¿½fico al pipeline.
      *
-     * @param deviceContext Contexto del dispositivo.
-     * @param type          Tipo de shader a activar (VERTEX_SHADER o PIXEL_SHADER).
+     * Permite vincular solo el Vertex Shader o solo el Pixel Shader,
+     * segï¿½n el parï¿½metro @p type.
+     *
+     * @param deviceContext Contexto donde se aplicarï¿½ el shader.
+     * @param type          Tipo de shader a establecer (VS o PS).
      */
-    void render(DeviceContext& deviceContext, ShaderType type);
+    void
+        render(DeviceContext& deviceContext, ShaderType type);
 
     /**
-     * @brief Libera los recursos de shaders, blobs y el input layout.
+     * @brief Libera todos los recursos asociados (shaders, blobs e input layout).
+     *
+     * @post @c m_VertexShader == nullptr, @c m_PixelShader == nullptr,
+     *       @c m_vertexShaderData == nullptr, @c m_pixelShaderData == nullptr.
      */
-    void destroy();
-
-    // ------------------------------------------------------------------------
-    // Métodos de Creación y Compilación (Helpers)
-    // ------------------------------------------------------------------------
+    void
+        destroy();
 
     /**
-     * @brief Crea el objeto Input Layout.
+     * @brief Crea un Input Layout asociado al Vertex Shader.
      *
-     * @param device Dispositivo DirectX.
-     * @param Layout Vector de descripción de elementos.
-     * @return HRESULT S_OK si tiene éxito.
+     * @param device Dispositivo con el que se crearï¿½ el recurso.
+     * @param Layout Descripciï¿½n de los elementos de entrada.
+     * @return @c S_OK si fue exitoso; cï¿½digo @c HRESULT en caso de error.
      */
-    HRESULT CreateInputLayout(Device& device,
-        std::vector<D3D11_INPUT_ELEMENT_DESC> Layout);
+    HRESULT
+        CreateInputLayout(Device& device, LayoutBuilder);
 
     /**
-     * @brief Crea un shader específico (VS o PS) usando el nombre de archivo interno.
+     * @brief Crea un shader (Vertex o Pixel) a partir del archivo establecido en @c m_shaderFileName.
      *
-     * Asume puntos de entrada estándar ("VS" para Vertex, "PS" para Pixel) y
-     * modelos de shader ("vs_4_0", "ps_4_0").
-     *
-     * @param device Dispositivo DirectX.
+     * @param device Dispositivo con el que se crearï¿½ el recurso.
      * @param type   Tipo de shader a crear.
-     * @return HRESULT S_OK si la compilación tiene éxito.
+     * @return @c S_OK si fue exitoso; cï¿½digo @c HRESULT en caso de error.
      */
-    HRESULT CreateShader(Device& device, ShaderType type);
+    HRESULT
+        CreateShader(Device& device, ShaderType type);
 
     /**
-     * @brief Crea un shader específico desde un archivo explícito.
+     * @brief Crea un shader (Vertex o Pixel) a partir de un archivo HLSL.
      *
-     * @param device   Dispositivo DirectX.
+     * @param device   Dispositivo con el que se crearï¿½ el recurso.
      * @param type     Tipo de shader a crear.
-     * @param fileName Ruta del archivo HLSL.
-     * @return HRESULT S_OK si la compilación tiene éxito.
+     * @param fileName Nombre del archivo HLSL.
+     * @return @c S_OK si fue exitoso; cï¿½digo @c HRESULT en caso de error.
      */
-    HRESULT CreateShader(Device& device, ShaderType type, const std::string& fileName);
+    HRESULT
+        CreateShader(Device& device, ShaderType type, const std::string& fileName);
 
     /**
-     * @brief Función de bajo nivel que envuelve D3DCompileFromFile.
+     * @brief Compila un shader desde archivo.
      *
-     * @param szFileName    Ruta del archivo HLSL.
-     * @param szEntryPoint  Nombre de la función principal en el HLSL (ej. "main", "VS", "PS").
-     * @param szShaderModel Versión del compilador (ej. "vs_4_0", "ps_5_0").
-     * @param ppBlobOut     Salida: Blob binario con el código compilado.
-     * @return HRESULT      S_OK si compila, o error si falla (imprime errores en el Output de VS).
+     * Llama internamente a @c D3DCompileFromFile para obtener el bytecode
+     * de un shader en funciï¿½n de su punto de entrada y modelo.
+     *
+     * @param szFileName   Ruta del archivo HLSL.
+     * @param szEntryPoint Punto de entrada de la funciï¿½n shader (ej. "VSMain").
+     * @param szShaderModel Modelo de shader (ej. "vs_5_0", "ps_5_0").
+     * @param ppBlobOut    Salida con el bytecode compilado.
+     * @return @c S_OK si fue exitoso; cï¿½digo @c HRESULT en caso de error.
      */
-    HRESULT CompileShaderFromFile(char* szFileName,
-        LPCSTR szEntryPoint,
-        LPCSTR szShaderModel,
-        ID3DBlob** ppBlobOut);
+    HRESULT
+        CompileShaderFromFile(char* szFileName,
+            LPCSTR szEntryPoint,
+            LPCSTR szShaderModel,
+            ID3DBlob** ppBlobOut);
 
 public:
     /**
-     * @brief Interfaz del Vertex Shader. Procesa cada vértice de la malla.
+     * @brief Vertex Shader compilado y creado en GPU.
      */
     ID3D11VertexShader* m_VertexShader = nullptr;
 
     /**
-     * @brief Interfaz del Pixel Shader. Calcula el color final de cada píxel.
+     * @brief Pixel Shader compilado y creado en GPU.
      */
     ID3D11PixelShader* m_PixelShader = nullptr;
 
     /**
-     * @brief Objeto que define el formato de los datos de vértices.
+     * @brief Input Layout asociado al Vertex Shader.
      */
     InputLayout m_inputLayout;
 
 private:
-    std::string m_shaderFileName;       ///< Ruta del archivo fuente HLSL.
+    /**
+     * @brief Nombre del archivo HLSL asociado a este programa de shaders.
+     */
+    std::string m_shaderFileName;
 
-    ID3DBlob* m_vertexShaderData = nullptr; ///< Bytecode compilado del VS (necesario para el Input Layout).
-    ID3DBlob* m_pixelShaderData = nullptr;  ///< Bytecode compilado del PS.
+    /**
+     * @brief Bytecode compilado del Vertex Shader.
+     */
+    ID3DBlob* m_vertexShaderData = nullptr;
+
+    /**
+     * @brief Bytecode compilado del Pixel Shader.
+     */
+    ID3DBlob* m_pixelShaderData = nullptr;
 };

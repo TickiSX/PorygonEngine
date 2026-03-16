@@ -16,12 +16,12 @@ class MeshComponent;
 
 /**
  * @class Actor
- * @brief Representa una entidad gr�fica con mallas, texturas y estados de renderizado.
+ * @brief Representa una entidad grfica con mallas, texturas y estados de renderizado.
  *
  * Un Actor es una entidad del motor que contiene mallas, texturas y recursos de renderizado
  * necesarios para dibujar un objeto en la escena.
- * Administra buffers de v�rtices e �ndices, estados de rasterizaci�n, blending y shaders,
- * adem�s de soportar renderizado de sombras.
+ * Administra buffers de vrtices e ndices, estados de rasterizacin, blending y shaders,
+ * adems de soportar renderizado de sombras.
  */
 class
 	Actor : public Entity {
@@ -43,13 +43,16 @@ public:
 	virtual
 		~Actor() = default;
 
+	/**
+	 * @brief Mtodo de activacin de la entidad.
+	 */
 	void
 		awake() override {}
 
 	/**
 	 * @brief Inicializa el actor.
 	 *
-	 * M�todo heredado de @c Entity.
+	 * Mtodo heredado de @c Entity.
 	 * Puede usarse para inicializar recursos adicionales en clases derivadas.
 	 */
 	void
@@ -58,10 +61,10 @@ public:
 	/**
 	 * @brief Actualiza el actor en cada frame.
 	 *
-	 * @param deltaTime     Tiempo transcurrido desde la �ltima actualizaci�n.
-	 * @param deviceContext Contexto del dispositivo para operaciones gr�ficas.
+	 * @param deltaTime     Tiempo transcurrido desde la ltima actualizacin.
+	 * @param deviceContext Contexto del dispositivo para operaciones grficas.
 	 *
-	 * @note Este m�todo puede actualizar animaciones, transformaciones u otros recursos dependientes del tiempo.
+	 * @note Este mtodo puede actualizar animaciones, transformaciones u otros recursos dependientes del tiempo.
 	 */
 	void
 		update(float deltaTime, DeviceContext& deviceContext) override;
@@ -71,11 +74,15 @@ public:
 	 *
 	 * Configura estados de render, buffers y shaders antes de dibujar las mallas asociadas al actor.
 	 *
-	 * @param deviceContext Contexto del dispositivo para operaciones gr�ficas.
+	 * @param deviceContext Contexto del dispositivo para operaciones grficas.
 	 */
 	void
 		render(DeviceContext& deviceContext) override;
 
+	/**
+	 * @brief Renderiza el actor especficamente para un skybox.
+	 * * @param deviceContext Contexto del dispositivo para operaciones grficas.
+	 */
 	void
 		renderForSkybox(DeviceContext& deviceContext);
 
@@ -90,10 +97,10 @@ public:
 	/**
 	 * @brief Establece las mallas del actor.
 	 *
-	 * Inicializa buffers de v�rtices e �ndices asociados a las mallas.
+	 * Inicializa buffers de vrtices e ndices asociados a las mallas.
 	 *
 	 * @param device Dispositivo con el cual se inicializan las mallas.
-	 * @param meshes Vector de componentes de malla que se asignar�n al actor.
+	 * @param meshes Vector de componentes de malla que se asignarn al actor.
 	 */
 	void
 		setMesh(Device& device, std::vector<MeshComponent> meshes);
@@ -136,33 +143,33 @@ public:
 	/**
 	 * @brief Renderiza la sombra del actor.
 	 *
-	 * Usa shaders y estados espec�ficos de shadow mapping para dibujar la proyecci�n del actor en el mapa de sombras.
+	 * Usa shaders y estados especficos de shadow mapping para dibujar la proyeccin del actor en el mapa de sombras.
 	 *
-	 * @param deviceContext Contexto del dispositivo para operaciones gr�ficas.
+	 * @param deviceContext Contexto del dispositivo para operaciones grficas.
 	 */
 	void
 		renderShadow(DeviceContext& deviceContext);
 
-private:
-	std::vector<MeshComponent> m_meshes;   ///< Conjunto de componentes de malla del actor.
-	std::vector<Texture> m_textures;       ///< Texturas aplicadas al actor.
-	std::vector<Buffer> m_vertexBuffers;   ///< Buffers de v�rtices asociados a las mallas.
-	std::vector<Buffer> m_indexBuffers;    ///< Buffers de �ndices asociados a las mallas.
+public:
+	std::vector<MeshComponent> m_meshes;         ///< Conjunto de componentes de malla del actor.
+	std::vector<Texture> m_textures;             ///< Texturas aplicadas al actor.
+	std::vector<Buffer> m_vertexBuffers;         ///< Buffers de vrtices asociados a las mallas.
+	std::vector<Buffer> m_indexBuffers;          ///< Buffers de ndices asociados a las mallas.
 
-	//BlendState m_blendstate;               ///< Estado de blending usado por el actor.
-	//RasterizerState m_rasterizer;               ///< Estado de rasterizaci�n usado por el actor.
-	SamplerState m_sampler;                ///< Estado de muestreo de texturas.
-	CBChangesEveryFrame m_model;           ///< Constante de buffer para transformaciones por frame.
-	Buffer m_modelBuffer;                  ///< Constant buffer que contiene @c m_model.
+	//BlendState m_blendstate;                   ///< Estado de blending usado por el actor.
+	//RasterizerState m_rasterizer;              ///< Estado de rasterizacin usado por el actor.
+	SamplerState m_sampler;                      ///< Estado de muestreo de texturas.
+	CBChangesEveryFrame m_model;                 ///< Constante de buffer para transformaciones por frame.
+	Buffer m_modelBuffer;                        ///< Constant buffer que contiene @c m_model.
 
 	// Recursos para sombras
-	ShaderProgram m_shaderShadow;          ///< Shader program usado para renderizar sombras.
-	Buffer m_shaderBuffer;                 ///< Buffer auxiliar para datos de sombras.
-	//BlendState m_shadowBlendState;         ///< Estado de blending espec�fico para sombras.
-	DepthStencilState m_shadowDepthStencilState; ///< Estado de profundidad/est�ncil para sombras.
-	CBChangesEveryFrame m_cbShadow;        ///< Constant buffer espec�fico de sombras.
+	ShaderProgram m_shaderShadow;                ///< Shader program usado para renderizar sombras.
+	Buffer m_shaderBuffer;                       ///< Buffer auxiliar para datos de sombras.
+	//BlendState m_shadowBlendState;             ///< Estado de blending especfico para sombras.
+	DepthStencilState m_shadowDepthStencilState; ///< Estado de profundidad/estncil para sombras.
+	CBChangesEveryFrame m_cbShadow;              ///< Constant buffer especfico de sombras.
 
-	XMFLOAT4 m_LightPos;                   ///< Posici�n de la luz usada para proyectar sombras.
-	std::string m_name = "Actor";          ///< Nombre identificador del actor.
-	bool castShadow = true;                ///< Indica si el actor proyecta sombras.
+	XMFLOAT4 m_LightPos;                         ///< Posicin de la luz usada para proyectar sombras.
+	std::string m_name = "Actor";                ///< Nombre identificador del actor.
+	bool castShadow = true;                      ///< Indica si el actor proyecta sombras.
 };

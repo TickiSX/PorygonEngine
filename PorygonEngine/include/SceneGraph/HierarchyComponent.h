@@ -8,16 +8,20 @@ class Entity;
 /**
  * @class HierarchyComponent
  * @brief Componente responsable de gestionar las relaciones de jerarquía (padre-hijo) entre entidades.
- * * Permite que las entidades se organicen en una estructura de árbol (Grafo de Escena),
+ *
+ * Permite que las entidades se organicen en una estructura de árbol (Grafo de Escena),
  * facilitando transformaciones relativas y propagación de estados.
  */
-class HierarchyComponent : public Component {
+class
+    HierarchyComponent : public Component {
 public:
     /**
      * @brief Constructor por defecto.
-     * Asigna el tipo de componente como HIERARCHY.
+     * Asigna el tipo de componente como @c HIERARCHY.
      */
-    HierarchyComponent() : Component(ComponentType::HIERARCHY) {}
+    HierarchyComponent()
+        : Component(ComponentType::HIERARCHY) {
+    }
 
     /**
      * @brief Destructor por defecto.
@@ -26,7 +30,7 @@ public:
 
     /**
      * @brief Inicialización del componente.
-     * Actualmente no realiza ninguna operación.
+     * @note Actualmente no realiza ninguna operación.
      */
     void
         init() override {}
@@ -36,7 +40,7 @@ public:
      * @param delta_time Tiempo transcurrido desde el último frame.
      */
     void
-        update(float) override {}
+        update(float delta_time) override {}
 
     /**
      * @brief Renderizado del componente.
@@ -47,7 +51,8 @@ public:
 
     /**
      * @brief Limpieza de recursos al destruir el componente.
-     * * Elimina las referencias a los hijos y desconecta al padre para evitar
+     *
+     * Elimina las referencias a los hijos y desconecta al padre para evitar
      * punteros colgantes dentro de la lógica de este componente.
      */
     void
@@ -71,7 +76,7 @@ public:
 
     /**
      * @brief Verifica si esta entidad es una raíz (no tiene padre).
-     * @return true si m_parent es nullptr, false en caso contrario.
+     * @return @c true si @c m_parent es @c nullptr, @c false en caso contrario.
      */
     bool
         isRoot() const {
@@ -80,7 +85,7 @@ public:
 
     /**
      * @brief Verifica si la entidad tiene hijos asociados.
-     * @return true si la lista de hijos no está vacía.
+     * @return @c true si la lista de hijos no está vacía.
      */
     bool
         hasChildren() const {
@@ -89,8 +94,10 @@ public:
 
     /**
      * @brief Añade una entidad hija a la lista.
-     * * Verifica primero si el hijo es válido y si ya existe en la lista
+     *
+     * Verifica primero si el hijo es válido y si ya existe en la lista
      * para evitar duplicados.
+     *
      * @param child Puntero a la entidad a añadir.
      */
     void
@@ -108,7 +115,9 @@ public:
 
     /**
      * @brief Elimina una entidad hija de la lista.
-     * * Utiliza el idioma Erase-Remove para eliminar eficientemente el elemento del vector.
+     *
+     * Utiliza el idioma Erase-Remove para eliminar eficientemente el elemento del vector.
+     *
      * @param child Puntero a la entidad a remover.
      */
     void
@@ -122,9 +131,12 @@ public:
     }
 
 public:
-    /** @brief Puntero a la entidad padre (nullptr si es raíz). */
+    /** * @brief Puntero a la entidad padre.
+     * @details @c nullptr si la entidad es raíz.
+     */
     Entity* m_parent = nullptr;
 
-    /** @brief Lista de punteros a las entidades hijas. */
+    /** * @brief Lista de punteros a las entidades hijas.
+     */
     std::vector<Entity*> m_children;
 };

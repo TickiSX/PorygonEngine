@@ -7,15 +7,24 @@ class DeviceContext;
 /**
  * @class SceneGraph
  * @brief Gestiona la jerarquía global de la escena y el ciclo de vida de las entidades.
- * * Esta clase es responsable de:
+ *
+ * Esta clase es responsable de:
  * 1. Mantener el registro de todas las entidades activas.
  * 2. Gestionar las relaciones Padre-Hijo (Attach/Detach).
  * 3. Propagar las transformaciones (matrices de mundo) desde los padres a los hijos.
  * 4. Orquestar el Update y Render de todas las entidades.
  */
-class SceneGraph {
+class
+	SceneGraph {
 public:
+	/**
+	 * @brief Constructor por defecto.
+	 */
 	SceneGraph() = default;
+
+	/**
+	 * @brief Destructor por defecto.
+	 */
 	~SceneGraph() = default;
 
 	/**
@@ -26,7 +35,8 @@ public:
 
 	/**
 	 * @brief Registra una nueva entidad en el sistema.
-	 * * Añade la entidad a la lista plana de entidades gestionadas (`m_entities`).
+	 *
+	 * Añade la entidad a la lista plana de entidades gestionadas (@c m_entities).
 	 * @param e Puntero a la entidad a registrar.
 	 */
 	void
@@ -34,7 +44,8 @@ public:
 
 	/**
 	 * @brief Elimina una entidad del sistema.
-	 * * Debería encargarse también de limpiar relaciones (si la entidad tiene padres o hijos)
+	 *
+	 * Debería encargarse también de limpiar relaciones (si la entidad tiene padres o hijos)
 	 * antes de eliminarla de la lista.
 	 * @param e Puntero a la entidad a eliminar.
 	 */
@@ -43,37 +54,40 @@ public:
 
 	/**
 	 * @brief Verifica si una entidad es ancestro de otra.
-	 * * Útil para evitar ciclos (ej: que el padre intente ser hijo de su propio hijo).
+	 *
+	 * Útil para evitar ciclos (ej: que el padre intente ser hijo de su propio hijo).
 	 * @param possibleAncestor La entidad que sospechamos que está arriba en la jerarquía.
-	 * @param node La entidad actual.
-	 * @return true si 'possibleAncestor' es padre, abuelo, etc., de 'node'.
+	 * @param node             La entidad actual.
+	 * @return @c true si @c possibleAncestor es padre, abuelo, etc., de @c node.
 	 */
 	bool
 		isAncestor(Entity* possibleAncestor, Entity* node) const;
 
 	/**
 	 * @brief Vincula un hijo a un padre en la jerarquía.
-	 * * Realiza validaciones como: evitar que sea null, evitar ciclos (usando isAncestor)
+	 *
+	 * Realiza validaciones como: evitar que sea null, evitar ciclos (usando @c isAncestor)
 	 * y actualizar los componentes de jerarquía de ambas entidades.
-	 * @param child La entidad que será movida.
+	 * @param child  La entidad que será movida.
 	 * @param parent La entidad que actuará como contenedor.
-	 * @return true si la vinculación fue exitosa, false si hubo un error (ej: ciclo detectado).
+	 * @return @c true si la vinculación fue exitosa, @c false si hubo un error.
 	 */
 	bool
 		attach(Entity* child, Entity* parent);
 
 	/**
 	 * @brief Desvincula una entidad de su padre.
-	 * * La entidad 'child' se convierte en una entidad raíz (root) en el grafo.
+	 *
+	 * La entidad @c child se convierte en una entidad raíz (root) en el grafo.
 	 * @param child La entidad a desvincular.
-	 * @return true si se desvinculó correctamente.
+	 * @return @c true si se desvinculó correctamente.
 	 */
 	bool
 		detach(Entity* child);
 
 	/**
 	 * @brief Actualiza la lógica de todas las entidades y recalcula las matrices de mundo.
-	 * @param deltaTime Tiempo transcurrido desde el último frame.
+	 * @param deltaTime     Tiempo transcurrido desde el último frame.
 	 * @param deviceContext Contexto del dispositivo para operaciones gráficas si son necesarias.
 	 */
 	void
@@ -95,9 +109,10 @@ public:
 private:
 	/**
 	 * @brief Método recursivo para actualizar las transformaciones mundiales.
-	 * * Multiplica la matriz local de la entidad por la matriz mundial del padre
+	 *
+	 * Multiplica la matriz local de la entidad por la matriz mundial del padre
 	 * (World = Local * ParentWorld) y propaga el resultado a los hijos.
-	 * @param node Entidad actual que se está procesando.
+	 * @param node        Entidad actual que se está procesando.
 	 * @param parentWorld Matriz de transformación mundial acumulada del padre.
 	 */
 	void
@@ -105,22 +120,24 @@ private:
 
 	/**
 	 * @brief Helper para comprobar si una entidad no tiene padre.
+	 * @param e Puntero a la entidad.
+	 * @return @c true si no tiene padre.
 	 */
 	bool
 		isRoot(Entity* e) const;
 
 	/**
-	 * @brief Helper para verificar si una entidad ya existe en `m_entities`.
+	 * @brief Helper para verificar si una entidad ya existe en @c m_entities.
+	 * @param e Puntero a la entidad.
+	 * @return @c true si ya está registrada.
 	 */
 	bool
 		isRegistered(Entity* e) const;
 
-private:
-	//std::vector<EU::TSharedPointer<Entity>> m_entities; // (Comentado en original)
-
 public:
-	/** * @brief Lista plana de todas las entidades en la escena.
-	 * Nota: Es pública para acceso rápido, pero idealmente debería gestionarse vía getters/iteradores.
+	/**
+	 * @brief Lista plana de todas las entidades en la escena.
+	 * @note Es pública para acceso rápido, pero idealmente debería gestionarse vía getters/iteradores.
 	 */
 	std::vector<Entity*> m_entities;
 };

@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 // Librerias STD
 #include <string>
 #include <sstream>
@@ -26,9 +27,18 @@
 #include "EngineUtilities\Memory\TStaticPtr.h"
 #include "EngineUtilities\Memory\TUniquePtr.h"
 
+//--------------------------------------------------------------------------------------
 // MACROS
+//--------------------------------------------------------------------------------------
+
+/**
+ * @brief Libera un recurso de DirectX y lo establece a @c nullptr.
+ */
 #define SAFE_RELEASE(x) if(x != nullptr) x->Release(); x = nullptr;
 
+ /**
+  * @brief Registra la creación exitosa o fallida de un recurso en la consola de debug.
+  */
 #define MESSAGE( classObj, method, state )   \
 {                                            \
    std::wostringstream os_;                  \
@@ -36,6 +46,9 @@
    OutputDebugStringW( os_.str().c_str() );  \
 }
 
+  /**
+   * @brief Registra un error detallado en la consola de debug.
+   */
 #define ERROR(classObj, method, errorMSG)                     \
 {                                                             \
     try {                                                     \
@@ -48,11 +61,16 @@
     }                                                         \
 }
 
-//--------------------------------------------------------------------------------------
-// Structures
-//--------------------------------------------------------------------------------------
-struct SimpleVertex
-{
+   //--------------------------------------------------------------------------------------
+   // Structures
+   //--------------------------------------------------------------------------------------
+
+   /**
+    * @struct SimpleVertex
+    * @brief Representa un vértice estándar con datos de iluminación y texturizado.
+    */
+struct
+    SimpleVertex {
     EU::Vector3 Position;
     EU::Vector3 Normal;
     EU::Vector3 Tangent;
@@ -60,32 +78,49 @@ struct SimpleVertex
     EU::Vector2 TextureCoordinate;
 };
 
+/**
+ * @struct SkyboxVertex
+ * @brief Estructura simplificada para vértices de un Skybox.
+ */
 struct
     SkyboxVertex {
     float x, y, z;
 };
 
-
-struct CBNeverChanges
-{
+/**
+ * @struct CBNeverChanges
+ * @brief Constant Buffer para datos que no varían durante la ejecución.
+ */
+struct
+    CBNeverChanges {
     XMMATRIX mView;
 };
 
-struct CBSkybox
-{
+/**
+ * @struct CBSkybox
+ * @brief Constant Buffer específico para el renderizado de Skybox.
+ */
+struct
+    CBSkybox {
     XMMATRIX mviewProj;
 };
 
-struct CBChangeOnResize
-{
+/**
+ * @struct CBChangeOnResize
+ * @brief Constant Buffer que se actualiza al redimensionar la ventana.
+ */
+struct
+    CBChangeOnResize {
     XMMATRIX mProjection;
 };
 
-// Constant buffer used in the vertex and pixel shaders.  Align to
-// 16?bytes as required by Direct3D constant buffers.
-struct CBMain
-{
-    //XMFLOAT4X4 World;
+/**
+ * @struct CBMain
+ * @brief Constant Buffer principal para el vertex y pixel shader.
+ * @note Alineado a 16 bytes según requerimientos de Direct3D.
+ */
+struct
+    CBMain {
     XMFLOAT4X4 View;
     XMFLOAT4X4 Projection;
     EU::Vector3 CameraPos;
@@ -96,33 +131,50 @@ struct CBMain
     float pad2;
 };
 
-struct CBChangesEveryFrame
-{
+/**
+ * @struct CBChangesEveryFrame
+ * @brief Constant Buffer para datos que cambian en cada frame (como matrices de mundo).
+ */
+struct
+    CBChangesEveryFrame {
     XMMATRIX mWorld;
     XMFLOAT4 vMeshColor;
 };
 
-enum ExtensionType {
+//--------------------------------------------------------------------------------------
+// Enums
+//--------------------------------------------------------------------------------------
+
+/**
+ * @enum ExtensionType
+ * @brief Formatos de imagen soportados por el motor.
+ */
+enum
+    ExtensionType {
     DDS = 0,
     PNG = 1,
     JPG = 2
 };
 
-enum ShaderType {
+/**
+ * @enum ShaderType
+ * @brief Identificadores para etapas del pipeline de shaders.
+ */
+enum
+    ShaderType {
     VERTEX_SHADER = 0,
     PIXEL_SHADER = 1
 };
 
 /**
  * @enum ComponentType
- * @brief Tipos de componentes disponibles en el juego.
+ * @brief Tipos de componentes disponibles en el sistema ECS.
  */
 enum
     ComponentType {
-    NONE = 0,     ///< Tipo de componente no especificado.
-    TRANSFORM = 1,///< Componente de transformaci�n.
-    MESH = 2,     ///< Componente de malla.
-    MATERIAL = 3,  ///< Componente de material.
-    HIERARCHY = 4 ///< Componente de jerarqu�a.
+    NONE = 0,      ///< Tipo de componente no especificado.
+    TRANSFORM = 1, ///< Componente de transformación (Pos/Rot/Sca).
+    MESH = 2,      ///< Componente de malla geométrica.
+    MATERIAL = 3,  ///< Componente de material y sombreado.
+    HIERARCHY = 4  ///< Componente de jerarquía padre-hijo.
 };
-

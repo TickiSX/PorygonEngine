@@ -1,5 +1,4 @@
 ﻿#pragma once
-
 #include "Prerequisites.h"
 #include "EngineUtilities/Vectors/Vector3.h"
 #include "Component.h"
@@ -12,7 +11,8 @@
  * las transformaciones de escala, rotación y traslación. Esta matriz es esencial para
  * el pipeline de renderizado.
  */
-class Transform : public Component {
+class
+    Transform : public Component {
 public:
     /**
      * @brief Constructor por defecto.
@@ -30,7 +30,8 @@ public:
      * @brief Inicializa los valores por defecto del transform.
      * Establece la escala a (1,1,1) y la matriz a la Identidad.
      */
-    void init() override {
+    void
+        init() override {
         scale.one(); // Asegura que la escala inicial no sea cero.
         matrix = XMMatrixIdentity();
     }
@@ -42,7 +43,8 @@ public:
      *
      * @param deltaTime Tiempo transcurrido desde la última actualización.
      */
-    void update(float deltaTime) override {
+    void
+        update(float deltaTime) override {
         // 1. Matriz de Escala
         XMMATRIX scaleMatrix = XMMatrixScaling(scale.x, scale.y, scale.z);
 
@@ -60,12 +62,14 @@ public:
      * @brief Renderiza el componente (sin implementación para Transform).
      * @param deviceContext Contexto del dispositivo.
      */
-    void render(DeviceContext& deviceContext) override {}
+    void
+        render(DeviceContext& deviceContext) override {}
 
     /**
      * @brief Libera recursos (sin implementación específica).
      */
-    void destroy() override {}
+    void
+        destroy() override {}
 
     // ------------------------------------------------------------------------
     // Getters y Setters - Posición
@@ -75,19 +79,22 @@ public:
      * @brief Obtiene la posición actual.
      * @return Referencia constante al vector de posición.
      */
-    const EU::Vector3& getPosition() const { return position; }
+    const EU::Vector3&
+        getPosition() const { return position; }
 
     /**
      * @brief Establece una nueva posición.
      * @param newPos Nuevo vector de posición.
      */
-    void setPosition(const EU::Vector3& newPos) { position = newPos; }
+    void
+        setPosition(const EU::Vector3& newPos) { position = newPos; }
 
     /**
      * @brief Desplaza la posición actual sumando un vector.
      * @param translation Vector de desplazamiento (delta).
      */
-    void translate(const EU::Vector3& translation);
+    void
+        translate(const EU::Vector3& translation);
 
     // ------------------------------------------------------------------------
     // Getters y Setters - Rotación
@@ -97,13 +104,15 @@ public:
      * @brief Obtiene la rotación actual (en radianes o grados, según implementación del motor).
      * @return Referencia constante al vector de rotación.
      */
-    const EU::Vector3& getRotation() const { return rotation; }
+    const EU::Vector3&
+        getRotation() const { return rotation; }
 
     /**
      * @brief Establece una nueva rotación.
      * @param newRot Nuevo vector de rotación.
      */
-    void setRotation(const EU::Vector3& newRot) { rotation = newRot; }
+    void
+        setRotation(const EU::Vector3& newRot) { rotation = newRot; }
 
     // ------------------------------------------------------------------------
     // Getters y Setters - Escala
@@ -113,13 +122,15 @@ public:
      * @brief Obtiene la escala actual.
      * @return Referencia constante al vector de escala.
      */
-    const EU::Vector3& getScale() const { return scale; }
+    const EU::Vector3&
+        getScale() const { return scale; }
 
     /**
      * @brief Establece una nueva escala.
      * @param newScale Nuevo vector de escala.
      */
-    void setScale(const EU::Vector3& newScale) { scale = newScale; }
+    void
+        setScale(const EU::Vector3& newScale) { scale = newScale; }
 
     // ------------------------------------------------------------------------
     // Utilidades
@@ -131,7 +142,8 @@ public:
      * @param newRot Nueva rotación.
      * @param newSca Nueva escala.
      */
-    void setTransform(const EU::Vector3& newPos, const EU::Vector3& newRot, const EU::Vector3& newSca) {
+    void
+        setTransform(const EU::Vector3& newPos, const EU::Vector3& newRot, const EU::Vector3& newSca) {
         position = newPos;
         rotation = newRot;
         scale = newSca;
@@ -140,7 +152,7 @@ public:
 public:
     /**
      * @brief Matriz de transformación resultante (World Matrix).
-     * Accesible públicamente para ser consumida por el sistema de renderizado.
+     * @details Accesible públicamente para ser consumida por el sistema de renderizado.
      */
     XMMATRIX matrix;
 

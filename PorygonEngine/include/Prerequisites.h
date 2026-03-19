@@ -119,8 +119,7 @@ struct
  * @brief Constant Buffer principal para el vertex y pixel shader.
  * @note Alineado a 16 bytes según requerimientos de Direct3D.
  */
-struct
-    CBMain {
+struct CBMain {
     XMFLOAT4X4 View;
     XMFLOAT4X4 Projection;
     EU::Vector3 CameraPos;
@@ -129,8 +128,8 @@ struct
     float pad1;
     EU::Vector3 LightColor;
     float pad2;
+    float extraPadding[4]; // <-- SOLUCIÓN: 16 bytes extra para alcanzar los 192 bytes que pide el Shader
 };
-
 /**
  * @struct CBChangesEveryFrame
  * @brief Constant Buffer para datos que cambian en cada frame (como matrices de mundo).

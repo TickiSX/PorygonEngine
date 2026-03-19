@@ -10,8 +10,7 @@
 // Variable estática para la operación actual de los Gizmos
 static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 
-void
-GUI::init(Window& window, Device& device, DeviceContext& deviceContext) {
+void GUI::init(Window& window, Device& device, DeviceContext& deviceContext) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -31,11 +30,10 @@ GUI::init(Window& window, Device& device, DeviceContext& deviceContext) {
     ImGui_ImplDX11_Init(device.m_device, deviceContext.m_deviceContext);
 
     toolTipData();
-    selectedActorIndex = 0;
+    m_selectedActorIndex = 0;
 }
 
-void
-GUI::update(Viewport& viewport, Window& window) {
+void GUI::update(Viewport& viewport, Window& window) {
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -50,8 +48,7 @@ GUI::update(Viewport& viewport, Window& window) {
     drawGizmoToolbar();
 }
 
-void
-GUI::render() {
+void GUI::render() {
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
@@ -63,8 +60,7 @@ GUI::render() {
     }
 }
 
-void
-GUI::destroy() {
+void GUI::destroy() {
     // PROTECCIÓN: Solo cerramos si el contexto y los datos del backend existen
     if (ImGui::GetCurrentContext() == nullptr) return;
 
@@ -83,8 +79,7 @@ GUI::destroy() {
     ImGui::DestroyContext();
 }
 
-void
-GUI::vec3Control(const std::string& label, float* values, float resetValue, float columnWidth) {
+void GUI::vec3Control(const std::string& label, float* values, float resetValue, float columnWidth) {
     ImGui::PushID(label.c_str());
 
     ImGui::Columns(2);
@@ -135,8 +130,7 @@ GUI::vec3Control(const std::string& label, float* values, float resetValue, floa
 
 void GUI::toolTipData() {}
 
-void
-GUI::appleLiquidStyle(float opacity, ImVec4 accent) {
+void GUI::appleLiquidStyle(float opacity, ImVec4 accent) {
     ImGuiStyle& style = ImGui::GetStyle();
     ImVec4* colors = style.Colors;
 
@@ -160,11 +154,10 @@ GUI::appleLiquidStyle(float opacity, ImVec4 accent) {
     colors[ImGuiCol_DockingPreview] = ImVec4(accent.x, accent.y, accent.z, 0.35f);
 }
 
-void
-GUI::closeApp() {
-    if (show_exit_popup) {
+void GUI::closeApp() {
+    if (m_showExitPopup) {
         ImGui::OpenPopup("Exit?");
-        show_exit_popup = false;
+        m_showExitPopup = false;
     }
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -179,8 +172,7 @@ GUI::closeApp() {
     }
 }
 
-void
-GUI::inspectorGeneral(EU::TSharedPointer<Actor> actor) {
+void GUI::inspectorGeneral(EU::TSharedPointer<Actor> actor) {
     if (!actor) return;
     ImGui::Begin("Inspector");
 
@@ -194,8 +186,7 @@ GUI::inspectorGeneral(EU::TSharedPointer<Actor> actor) {
     ImGui::End();
 }
 
-void
-GUI::inspectorContainer(EU::TSharedPointer<Actor> actor) {
+void GUI::inspectorContainer(EU::TSharedPointer<Actor> actor) {
     auto transform = actor->getComponent<Transform>();
     if (transform) {
         vec3Control("Position", (float*)transform->getPosition().data());
@@ -204,16 +195,15 @@ GUI::inspectorContainer(EU::TSharedPointer<Actor> actor) {
     }
 }
 
-void
-GUI::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
+void GUI::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
     ImGui::Begin("Hierarchy");
     for (int i = 0; i < (int)actors.size(); ++i) {
         if (!actors[i]) continue;
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-        if (selectedActorIndex == i) flags |= ImGuiTreeNodeFlags_Selected;
+        if (m_selectedActorIndex == i) flags |= ImGuiTreeNodeFlags_Selected;
 
         bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)i, flags, "%s", actors[i]->getName().c_str());
-        if (ImGui::IsItemClicked()) selectedActorIndex = i;
+        if (ImGui::IsItemClicked()) m_selectedActorIndex = i;
         if (nodeOpen) ImGui::TreePop();
     }
     ImGui::End();

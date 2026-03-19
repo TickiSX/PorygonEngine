@@ -1,16 +1,14 @@
 ﻿#include "BaseApp.h"
 #include "ResourceManager.h"
 
-HRESULT
-BaseApp::awake() {
+HRESULT BaseApp::awake() {
     HRESULT hr = S_OK;
     m_sceneGraph.init();
     MESSAGE("Main", "Awake", "Application awake successfully.");
     return hr;
 }
 
-int
-BaseApp::run(HINSTANCE hInst, int nCmdShow) {
+int BaseApp::run(HINSTANCE hInst, int nCmdShow) {
     if (FAILED(m_window.init(hInst, nCmdShow, WndProc, this))) {
         ERROR("Main", "Run", "Failed to initialize window.");
         return 0;
@@ -54,8 +52,7 @@ BaseApp::run(HINSTANCE hInst, int nCmdShow) {
     return (int)msg.wParam;
 }
 
-HRESULT
-BaseApp::init() {
+HRESULT BaseApp::init() {
     HRESULT hr = S_OK;
 
     // --- Infraestructura D3D11 ---
@@ -88,20 +85,20 @@ BaseApp::init() {
     m_cyberGun = EU::MakeShared<Actor>(m_device);
 
     if (!m_cyberGun.isNull()) {
-        m_model = new Model3D("Assets/MA5C.fbx", ModelType::FBX);
+        m_model = new Model3D("bin/Assets/MA5C.fbx", ModelType::FBX);
 
         // ACTUALIZACIÓN DE RUTAS SEGÚN TU CARPETA ASSETS
         // Usamos los nombres reales: MA5C_2K_Color, MA5C_2K_NormalGL, etc.
         bool texError = false;
-        if (FAILED(m_AlbedoSRV.init(m_device, "Assets/MA5C_2K_Color.png", PNG))) texError = true;
-        if (FAILED(m_NormalSRV.init(m_device, "Assets/MA5C_2K_NormalGL.png", PNG))) texError = true;
-        if (FAILED(m_MetallicSRV.init(m_device, "Assets/MA5C_2K_Metallic.png", PNG))) texError = true;
+        if (FAILED(m_AlbedoSRV.init(m_device, "bin/Assets/MA5C_2K_Color.png", PNG))) texError = true;
+        if (FAILED(m_NormalSRV.init(m_device, "bin/Assets/MA5C_2K_NormalGL.png", PNG))) texError = true;
+        if (FAILED(m_MetallicSRV.init(m_device, "bin/Assets/MA5C_2K_Metallic.png", PNG))) texError = true;
 
         // Asignamos Glossiness al slot de Roughness (común en flujos de trabajo)
-        if (FAILED(m_RoughnessSRV.init(m_device, "Assets/MA5C_2K_Glossiness.png", PNG))) texError = true;
+        if (FAILED(m_RoughnessSRV.init(m_device, "bin/Assets/MA5C_2K_Glossiness.png", PNG))) texError = true;
 
         // Nota: Si no tienes AO específico, puedes reusar otra o cargar una blanca
-        if (FAILED(m_AOSRV.init(m_device, "Assets/MA5C_Mg_2K_Color.png", PNG))) texError = true;
+        if (FAILED(m_AOSRV.init(m_device, "bin/Assets/MA5C_Mg_2K_Color.png", PNG))) texError = true;
 
         if (texError) {
             MESSAGE("Main", "InitDevice", "Warning: Some MA5C textures failed to load. Check paths.");
@@ -162,7 +159,8 @@ void BaseApp::update(float deltaTime) {
     m_gui.drawViewportPanel(m_editorViewportPass.getSRV());
 
     if (!m_actors.empty()) {
-        unsigned int idx = m_gui.selectedActorIndex;
+        // CORREGIDO: Se actualizó de selectedActorIndex a m_selectedActorIndex
+        unsigned int idx = m_gui.m_selectedActorIndex;
         if (idx < m_actors.size()) {
             m_gui.inspectorGeneral(m_actors[idx]);
             m_gui.editTransform(m_camera, m_window, m_actors[idx]);

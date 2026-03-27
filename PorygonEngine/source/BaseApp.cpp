@@ -55,6 +55,9 @@ int BaseApp::run(HINSTANCE hInst, int nCmdShow) {
 HRESULT BaseApp::init() {
     HRESULT hr = S_OK;
 
+    // --- RUTA RAIZ ABSOLUTA apuntando a tu carpeta bin/ ---
+    const std::string ROOT_PATH = "C:/6TOCuatri/PorygonEngine/PorygonEngine/bin/";
+
     // --- Infraestructura D3D11 ---
     hr = m_swapChain.init(m_device, m_deviceContext, m_backBuffer, m_window);
     if (FAILED(hr)) return hr;
@@ -76,8 +79,8 @@ HRESULT BaseApp::init() {
 
     // --- Cargar Skybox ---
     std::array<std::string, 6> faces = {
-        "Skybox/cubemap_0.png", "Skybox/cubemap_1.png", "Skybox/cubemap_2.png",
-        "Skybox/cubemap_3.png", "Skybox/cubemap_4.png", "Skybox/cubemap_5.png"
+        ROOT_PATH + "Skybox/cubemap_0.png", ROOT_PATH + "Skybox/cubemap_1.png", ROOT_PATH + "Skybox/cubemap_2.png",
+        ROOT_PATH + "Skybox/cubemap_3.png", ROOT_PATH + "Skybox/cubemap_4.png", ROOT_PATH + "Skybox/cubemap_5.png"
     };
     m_skyboxTex.CreateCubemap(m_device, m_deviceContext, faces, false);
 
@@ -85,20 +88,19 @@ HRESULT BaseApp::init() {
     m_cyberGun = EU::MakeShared<Actor>(m_device);
 
     if (!m_cyberGun.isNull()) {
-        m_model = new Model3D("bin/Assets/MA5C.fbx", ModelType::FBX);
+        m_model = new Model3D(ROOT_PATH + "Assets/MA5C.fbx", ModelType::FBX);
 
-        // ACTUALIZACIÓN DE RUTAS SEGÚN TU CARPETA ASSETS
-        // Usamos los nombres reales: MA5C_2K_Color, MA5C_2K_NormalGL, etc.
+        // ACTUALIZACIÓN DE RUTAS SEGÚN TU CARPETA ASSETS (Usando ROOT_PATH y sin el .png final)
         bool texError = false;
-        if (FAILED(m_AlbedoSRV.init(m_device, "bin/Assets/MA5C_2K_Color.png", PNG))) texError = true;
-        if (FAILED(m_NormalSRV.init(m_device, "bin/Assets/MA5C_2K_NormalGL.png", PNG))) texError = true;
-        if (FAILED(m_MetallicSRV.init(m_device, "bin/Assets/MA5C_2K_Metallic.png", PNG))) texError = true;
+        if (FAILED(m_AlbedoSRV.init(m_device, ROOT_PATH + "Assets/MA5C_2K_Color", ExtensionType::PNG))) texError = true;
+        if (FAILED(m_NormalSRV.init(m_device, ROOT_PATH + "Assets/MA5C_2K_NormalGL", ExtensionType::PNG))) texError = true;
+        if (FAILED(m_MetallicSRV.init(m_device, ROOT_PATH + "Assets/MA5C_2K_Metallic", ExtensionType::PNG))) texError = true;
 
         // Asignamos Glossiness al slot de Roughness (común en flujos de trabajo)
-        if (FAILED(m_RoughnessSRV.init(m_device, "bin/Assets/MA5C_2K_Glossiness.png", PNG))) texError = true;
+        if (FAILED(m_RoughnessSRV.init(m_device, ROOT_PATH + "Assets/MA5C_2K_Glossiness", ExtensionType::PNG))) texError = true;
 
         // Nota: Si no tienes AO específico, puedes reusar otra o cargar una blanca
-        if (FAILED(m_AOSRV.init(m_device, "bin/Assets/MA5C_Mg_2K_Color.png", PNG))) texError = true;
+        if (FAILED(m_AOSRV.init(m_device, ROOT_PATH + "Assets/MA5C_Mg_2K_Color", ExtensionType::PNG))) texError = true;
 
         if (texError) {
             MESSAGE("Main", "InitDevice", "Warning: Some MA5C textures failed to load. Check paths.");
@@ -128,7 +130,8 @@ HRESULT BaseApp::init() {
         .Add("BITANGENT", DXGI_FORMAT_R32G32B32_FLOAT)
         .Add("TEXCOORD", DXGI_FORMAT_R32G32_FLOAT);
 
-    hr = m_shaderProgram.init(m_device, "PorygonEngine.fx", builder);
+    // Ajustamos la ruta del shader
+    hr = m_shaderProgram.init(m_device, ROOT_PATH + "PorygonEngine.fx", builder);
     if (FAILED(hr)) return hr;
 
     hr = m_constantBuffer.init(m_device, sizeof(CBMain));
@@ -159,7 +162,6 @@ void BaseApp::update(float deltaTime) {
     m_gui.drawViewportPanel(m_editorViewportPass.getSRV());
 
     if (!m_actors.empty()) {
-        // CORREGIDO: Se actualizó de selectedActorIndex a m_selectedActorIndex
         unsigned int idx = m_gui.m_selectedActorIndex;
         if (idx < m_actors.size()) {
             m_gui.inspectorGeneral(m_actors[idx]);

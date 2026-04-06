@@ -306,7 +306,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\x64\PorygonEngine.fx">
+    <None Include="PBRShaders.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="bin\PorygonEngine.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="bin\Skybox.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

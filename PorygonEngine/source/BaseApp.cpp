@@ -90,21 +90,18 @@ HRESULT BaseApp::init() {
     if (!m_cyberGun.isNull()) {
         m_model = new Model3D(ROOT_PATH + "Assets/MA5C.fbx", ModelType::FBX);
 
-        // ACTUALIZACIÓN DE RUTAS SEGÚN TU CARPETA ASSETS (Usando ROOT_PATH y sin el .png final)
         bool texError = false;
         if (FAILED(m_AlbedoSRV.init(m_device, ROOT_PATH + "Assets/MA5C_2K_Color", ExtensionType::PNG))) texError = true;
         if (FAILED(m_NormalSRV.init(m_device, ROOT_PATH + "Assets/MA5C_2K_NormalGL", ExtensionType::PNG))) texError = true;
         if (FAILED(m_MetallicSRV.init(m_device, ROOT_PATH + "Assets/MA5C_2K_Metallic", ExtensionType::PNG))) texError = true;
 
-        // Asignamos Glossiness al slot de Roughness (común en flujos de trabajo)
         if (FAILED(m_RoughnessSRV.init(m_device, ROOT_PATH + "Assets/MA5C_2K_Glossiness", ExtensionType::PNG))) texError = true;
-
-        // Nota: Si no tienes AO específico, puedes reusar otra o cargar una blanca
+        
         if (FAILED(m_AOSRV.init(m_device, ROOT_PATH + "Assets/MA5C_Mg_2K_Color", ExtensionType::PNG))) texError = true;
 
         if (texError) {
             MESSAGE("Main", "InitDevice", "Warning: Some MA5C textures failed to load. Check paths.");
-            // No retornamos E_FAIL para permitir que el motor abra y puedas ver el error en consola
+ 
         }
 
         std::vector<Texture> textures = { m_AlbedoSRV, m_NormalSRV, m_MetallicSRV, m_RoughnessSRV, m_AOSRV };
@@ -131,7 +128,7 @@ HRESULT BaseApp::init() {
         .Add("TEXCOORD", DXGI_FORMAT_R32G32_FLOAT);
 
     // Ajustamos la ruta del shader
-    hr = m_shaderProgram.init(m_device, ROOT_PATH + "PorygonEngine.fx", builder);
+    hr = m_shaderProgram.init(m_device, ROOT_PATH + "PBRShaders.hlsl", builder);
     if (FAILED(hr)) return hr;
 
     hr = m_constantBuffer.init(m_device, sizeof(CBMain));

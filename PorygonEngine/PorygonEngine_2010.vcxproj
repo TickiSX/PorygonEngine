@@ -515,7 +515,15 @@
     <ResourceCompile Include="PorygonEngine.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\x64\PorygonEngine.fx">
+    <None Include="bin\PorygonEngine.fx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="PBRShaders.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Skybox.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

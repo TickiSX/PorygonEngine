@@ -29,20 +29,36 @@
 #include "Rendering/RenderScene.h"
 #include <string>
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API
+LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-class BaseApp {
+class
+    BaseApp {
 public:
     BaseApp() = default;
     ~BaseApp() { destroy(); }
 
-    HRESULT awake();
-    int run(HINSTANCE hInst, int nCmdShow);
-    HRESULT init();
-    void update(float deltaTime);
-    void render();
-    void destroy();
-    void onResize(unsigned int newW, unsigned int newH);
+    HRESULT
+        awake();
+
+    int
+        run(HINSTANCE hInst, int nCmdShow);
+
+    HRESULT
+        init();
+
+    void
+        update(float deltaTime);
+
+    void
+        render();
+
+    void
+        destroy();
+
+    void
+        onResize(unsigned int newW, unsigned int newH);
+
     void handleEditorViewportResize();
 
     bool saveScene(const std::string& path);
@@ -50,7 +66,9 @@ public:
     std::string getDefaultScenePath() const;
 
 private:
-    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK
+        WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 
 private:
     Window                              m_window;
@@ -63,53 +81,52 @@ private:
     DepthStencilView                    m_depthStencilView;
     Viewport                            m_viewport;
     ShaderProgram                       m_shaderProgram;
+    bool m_d3dReady = false;
+    Buffer m_constantBuffer;
+    CBMain m_constantBufferStruct;
 
-    bool                                m_d3dReady = false;
-    Buffer                              m_constantBuffer;
-    CBMain                              m_constantBufferStruct;
-
-    // Textures (MA5C)
-    Texture                             m_AlbedoSRV;
-    Texture                             m_MetallicSRV;
-    Texture                             m_RoughnessSRV;
-    Texture                             m_AOSRV;
-    Texture                             m_NormalSRV;
-    Texture                             m_EmissiveSRV;
+    // Textures (Solo las que usa el MA5C)
+    Texture m_AlbedoSRV;
+    Texture m_MetallicSRV;
+    Texture m_RoughnessSRV;
+    Texture m_AOSRV;
+    Texture m_NormalSRV;
+    Texture m_EmissiveSRV;
 
     Camera                              m_camera;
-    SceneGraph                          m_sceneGraph;
 
+    SceneGraph                          m_sceneGraph;
     std::vector<EU::TSharedPointer<Actor>> m_actors;
-    EU::TSharedPointer<Actor>           m_cyberGun; // Se mantiene la variable, pero representa el MA5C
-    EU::TSharedPointer<Actor>           m_directionalLightActor;
+    EU::TSharedPointer<Actor> m_cyberGun; // Esta variable ahora controla tu MA5C
+    EU::TSharedPointer<Actor> m_directionalLightActor;
 
     Model3D* m_model = nullptr;
 
     GUI                                 m_gui;
-    bool                                m_guiInitialized = false;
-    EU::Vector3                         m_cameraPos;
+    bool m_guiInitialized = false;
+    EU::Vector3 m_cameraPos;
 
-    Skybox                              m_skybox;
+    Skybox m_skybox;
     Texture                             m_skyboxTex;
-    RasterizerState                     m_defaultRasterizer;
-    DepthStencilState                   m_defaultDepthStencil;
-    SamplerState                        m_defaultSampler;
+    RasterizerState m_defaultRasterizer;
+    DepthStencilState m_defaultDepthStencil;
+    SamplerState m_defaultSampler;
 
-    Mesh                                m_cyberGunRenderMesh;
+    Mesh m_cyberGunRenderMesh;
 
-    Material                            m_pbrMaterial;
-    Material                            m_transparentPbrMaterial;
-    MaterialInstance                    m_cyberGunMaterial;
+    Material m_pbrMaterial;
+    Material m_transparentPbrMaterial;
+    MaterialInstance m_cyberGunMaterial;
 
-    EditorViewportPass                  m_editorViewportPass;
-    ForwardRenderer                     m_forwardRenderer;
-    RenderScene                         m_renderScene;
+    EditorViewportPass m_editorViewportPass;
+    ForwardRenderer m_forwardRenderer;
+    RenderScene m_renderScene;
 
-    bool                                m_editorViewportResizePending = false;
-    unsigned int                        m_pendingViewportWidth = 1;
-    unsigned int                        m_pendingViewportHeight = 1;
+    bool m_editorViewportResizePending = false;
+    unsigned int m_pendingViewportWidth = 1;
+    unsigned int m_pendingViewportHeight = 1;
 
-    unsigned int                        m_lastRequestedViewportWidth = 1;
-    unsigned int                        m_lastRequestedViewportHeight = 1;
-    int                                 m_viewportResizeStableFrames = 0;
+    unsigned int m_lastRequestedViewportWidth = 1;
+    unsigned int m_lastRequestedViewportHeight = 1;
+    int m_viewportResizeStableFrames = 0;
 };

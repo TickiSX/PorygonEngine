@@ -136,7 +136,7 @@ BaseApp::init() {
     m_skyboxTex.CreateCubemap(m_device, m_deviceContext, faces, false);
 
     // --- Inicialización de Actores ---
-    m_cyberGun = EU::MakeShared<Actor>(m_device); // Se mantiene variable, pero es la MA5C
+    m_cyberGun = EU::MakeShared<Actor>(m_device); // Variable que controla la MA5C
 
     // Set MA5C Actor
     if (!m_cyberGun.isNull()) {
@@ -193,7 +193,7 @@ BaseApp::init() {
         .Add("BITANGENT", DXGI_FORMAT_R32G32B32_FLOAT)
         .Add("TEXCOORD", DXGI_FORMAT_R32G32_FLOAT);
 
-    // Create the Shader Program (Corregido con la "s" al final para que coincida con tu archivo)
+    // Create the Shader Program
     hr = m_shaderProgram.init(m_device, ROOT_PATH + "PBRShaders.hlsl", builder);
     if (FAILED(hr)) {
         ERROR("Main", "InitDevice",

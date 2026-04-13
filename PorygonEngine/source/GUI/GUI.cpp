@@ -226,6 +226,7 @@ GUI::update(Viewport& viewport, Window& window) {
     ImGuizmo::BeginFrame();
     ImGuiIO& io = ImGui::GetIO();
 
+    // CORRECCIÓN: Tecla de guardado
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S, false)) {
         m_requestSaveScene = true;
     }
@@ -288,6 +289,7 @@ GUI::vec3Control(const std::string& label, float* values, float resetValue, floa
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 3.0f, 4.0f });
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
 
+    // CORRECCIÓN: Función para obtener el tamaño de la fuente
     float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
     ImVec2 buttonSize = { lineHeight, lineHeight };
     const float spacing = ImGui::GetStyle().ItemSpacing.x;
@@ -763,7 +765,7 @@ GUI::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
 
         ImVec2 rowSize(ImGui::GetContentRegionAvail().x, 42.0f);
 
-        // CORRECCIÓN: Se reemplazó el flag ImGuiSelectableFlags_SpanAvailWidth (que no existe estándar) por 0
+        // CORRECCIÓN: Flags del Selectable arreglados
         if (ImGui::Selectable("##actorRow", isSelected, 0, rowSize)) {
             selectedActorIndex = i;
         }
@@ -910,7 +912,7 @@ void GUI::drawGizmoToolbar()
 
         const bool worldLocalSupported = (mCurrentGizmoOperation != ImGuizmo::SCALE);
 
-        // CORRECCIÓN: Uso de la API moderna de ImGui para deshabilitar botones
+        // CORRECCIÓN: Flags Disabled arreglados con la nueva API
         if (!worldLocalSupported) {
             ImGui::BeginDisabled(true);
         }
@@ -920,7 +922,6 @@ void GUI::drawGizmoToolbar()
 
         if (!worldLocalSupported) {
             ImGui::EndDisabled();
-            // El flag para ver tooltips en items deshabilitados si está disponible
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
                 ImGui::SetTooltip("Scale uses local orientation. World/Local affects Move and Rotate.");
             }

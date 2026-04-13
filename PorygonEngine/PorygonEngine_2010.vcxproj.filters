@@ -51,6 +51,12 @@
     <Filter Include="Source\SceneGraph">
       <UniqueIdentifier>{fa752b52-d196-4d06-9f51-f163bb81bf37}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Rendering">
+      <UniqueIdentifier>{fbad925e-324c-43b2-b269-60859a3370d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Rendering">
+      <UniqueIdentifier>{036d71e1-4e1a-4b7f-b3be-bd1493e4659f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PorygonEngine.cpp">
@@ -154,6 +160,15 @@
     </ClCompile>
     <ClCompile Include="source\EditorViewportPass.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Rendering\ForwardRenderer.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Rendering\MaterialInstance.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Rendering\RenderScene.cpp">
+      <Filter>Source\Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -303,6 +318,30 @@
     </ClInclude>
     <ClInclude Include="include\EngineUtilities\Utilities\LayoutBuilder.h">
       <Filter>Include\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\ForwardRenderer.h">
+      <Filter>Include\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Material.h">
+      <Filter>Include\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\MaterialInstance.h">
+      <Filter>Include\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Mesh.h">
+      <Filter>Include\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\RenderScene.h">
+      <Filter>Include\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\RenderTypes.h">
+      <Filter>Include\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ECS\LightComponent.h">
+      <Filter>Include\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ECS\MeshRendererComponent.h">
+      <Filter>Include\ECS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -134,6 +134,8 @@ SwapChain::init(Device& device,
     return S_OK;
 }
 
+//--------------------------------------------------------------------------------------
+
 void
 SwapChain::destroy() {
     if (m_swapChain) {
@@ -150,6 +152,8 @@ SwapChain::destroy() {
     }
 }
 
+//--------------------------------------------------------------------------------------
+
 void
 SwapChain::present() {
     if (m_swapChain) {
@@ -164,21 +168,21 @@ SwapChain::present() {
     }
 }
 
+//--------------------------------------------------------------------------------------
+
 HRESULT
-SwapChain::resizeBuffers(UINT width, UINT height) {
+SwapChain::resizeBuffers(unsigned int width, unsigned int height) {
     if (!m_swapChain) {
         ERROR("SwapChain", "resizeBuffers", "Swap chain is not initialized.");
         return E_POINTER;
     }
 
     // 0,0 y DXGI_FORMAT_UNKNOWN = mantener cantidad de buffers y formato actual
-    HRESULT hr = m_swapChain->ResizeBuffers(
-        0,
+    HRESULT hr = m_swapChain->ResizeBuffers(0,
         width,
         height,
         DXGI_FORMAT_UNKNOWN,
-        0
-    );
+        0);
 
     if (FAILED(hr)) {
         ERROR("SwapChain", "resizeBuffers",
@@ -189,18 +193,19 @@ SwapChain::resizeBuffers(UINT width, UINT height) {
     return S_OK;
 }
 
-HRESULT SwapChain::getBackBuffer(Texture& backBuffer)
-{
+//--------------------------------------------------------------------------------------
+
+HRESULT
+SwapChain::getBackBuffer(Texture& backBuffer) {
     if (!m_swapChain) {
         ERROR("SwapChain", "getBackBuffer", "Swap chain is not initialized.");
         return E_POINTER;
     }
 
     // IMPORTANTE: backBuffer debe ser un ID3D11Texture2D* internamente
-    HRESULT hr = m_swapChain->GetBuffer(
-        0, __uuidof(ID3D11Texture2D),
-        reinterpret_cast<void**>(&backBuffer)
-    );
+    HRESULT hr = m_swapChain->GetBuffer(0,
+        __uuidof(ID3D11Texture2D),
+        reinterpret_cast<void**>(&backBuffer));
 
     if (FAILED(hr)) {
         ERROR("SwapChain", "getBackBuffer",

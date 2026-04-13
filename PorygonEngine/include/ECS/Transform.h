@@ -3,161 +3,99 @@
 #include "EngineUtilities/Vectors/Vector3.h"
 #include "Component.h"
 
-/**
- * @class Transform
- * @brief Componente que define la posición, rotación y escala de una entidad en el espacio 3D.
- *
- * Este componente es responsable de calcular la Matriz de Mundo (World Matrix) combinando
- * las transformaciones de escala, rotación y traslación. Esta matriz es esencial para
- * el pipeline de renderizado.
- */
 class
     Transform : public Component {
 public:
-    /**
-     * @brief Constructor por defecto.
-     * Inicializa los vectores en cero y asigna el tipo de componente.
-     */
-    Transform()
-        : position(),
+    // Constructor que inicializa posición, rotación y escala por defecto
+    Transform() : position(),
         rotation(),
         scale(),
         matrix(),
+        worldMatrix(),
         Component(ComponentType::TRANSFORM) {
     }
 
-    /**
-     * @brief Inicializa los valores por defecto del transform.
-     * Establece la escala a (1,1,1) y la matriz a la Identidad.
-     */
+    // Métodos para inicialización, actualización, renderizado y destrucción
+    // Inicializa el objeto Transform
     void
-        init() override {
-        scale.one(); // Asegura que la escala inicial no sea cero.
+        init() {
+        scale.one();
         matrix = XMMatrixIdentity();
+        worldMatrix = XMMatrixIdentity();
     }
 
-    /**
-     * @brief Actualiza la matriz de transformación.
-     *
-     * Calcula la matriz final combinando: Escala * Rotación * Traslación (SRT).
-     *
-     * @param deltaTime Tiempo transcurrido desde la última actualización.
-     */
+    // Actualiza el estado del objeto Transform basado en el tiempo transcurrido
+    // @param deltaTime: Tiempo transcurrido desde la última actualización
     void
         update(float deltaTime) override {
-        // 1. Matriz de Escala
+        // Aplicar escala
         XMMATRIX scaleMatrix = XMMatrixScaling(scale.x, scale.y, scale.z);
-
-        // 2. Matriz de Rotación (Roll, Pitch, Yaw)
+        // Aplicar rotacion
         XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
-
-        // 3. Matriz de Traslación
+        // Aplicar traslacion
         XMMATRIX translationMatrix = XMMatrixTranslation(position.x, position.y, position.z);
 
-        // 4. Composición: Scale -> Rotation -> Translation
+        // Componer la matriz final en el orden: scale -> rotation -> translation
         matrix = scaleMatrix * rotationMatrix * translationMatrix;
+        worldMatrix = matrix;
     }
 
-    /**
-     * @brief Renderiza el componente (sin implementación para Transform).
-     * @param deviceContext Contexto del dispositivo.
-     */
+    // Renderiza el objeto Transform
+    // @param deviceContext: Contexto del dispositivo de renderizado
     void
         render(DeviceContext& deviceContext) override {}
 
-    /**
-     * @brief Libera recursos (sin implementación específica).
-     */
+    // Destruye el objeto Transform y libera recursos
     void
-        destroy() override {}
+        destroy() {}
 
-    // ------------------------------------------------------------------------
-    // Getters y Setters - Posición
-    // ------------------------------------------------------------------------
-
-    /**
-     * @brief Obtiene la posición actual.
-     * @return Referencia constante al vector de posición.
-     */
+    // Métodos de acceso a los datos de posición
+    // Retorna la posición actual
     const EU::Vector3&
         getPosition() const { return position; }
 
-    /**
-     * @brief Establece una nueva posición.
-     * @param newPos Nuevo vector de posición.
-     */
+    // Establece una nueva posición
     void
         setPosition(const EU::Vector3& newPos) { position = newPos; }
 
-    /**
-     * @brief Desplaza la posición actual sumando un vector.
-     * @param translation Vector de desplazamiento (delta).
-     */
-    void
-        translate(const EU::Vector3& translation);
-
-    // ------------------------------------------------------------------------
-    // Getters y Setters - Rotación
-    // ------------------------------------------------------------------------
-
-    /**
-     * @brief Obtiene la rotación actual (en radianes o grados, según implementación del motor).
-     * @return Referencia constante al vector de rotación.
-     */
+    // Métodos de acceso a los datos de rotación
+    // Retorna la rotación actual
     const EU::Vector3&
         getRotation() const { return rotation; }
 
-    /**
-     * @brief Establece una nueva rotación.
-     * @param newRot Nuevo vector de rotación.
-     */
+    // Establece una nueva rotación
     void
         setRotation(const EU::Vector3& newRot) { rotation = newRot; }
 
-    // ------------------------------------------------------------------------
-    // Getters y Setters - Escala
-    // ------------------------------------------------------------------------
-
-    /**
-     * @brief Obtiene la escala actual.
-     * @return Referencia constante al vector de escala.
-     */
+    // Métodos de acceso a los datos de escala
+    // Retorna la escala actual
     const EU::Vector3&
         getScale() const { return scale; }
 
-    /**
-     * @brief Establece una nueva escala.
-     * @param newScale Nuevo vector de escala.
-     */
+    // Establece una nueva escala
     void
         setScale(const EU::Vector3& newScale) { scale = newScale; }
 
-    // ------------------------------------------------------------------------
-    // Utilidades
-    // ------------------------------------------------------------------------
-
-    /**
-     * @brief Establece posición, rotación y escala simultáneamente.
-     * * @param newPos Nueva posición.
-     * @param newRot Nueva rotación.
-     * @param newSca Nueva escala.
-     */
     void
-        setTransform(const EU::Vector3& newPos, const EU::Vector3& newRot, const EU::Vector3& newSca) {
+        setTransform(const EU::Vector3& newPos,
+            const EU::Vector3& newRot,
+            const EU::Vector3& newSca) {
         position = newPos;
         rotation = newRot;
         scale = newSca;
     }
 
-public:
-    /**
-     * @brief Matriz de transformación resultante (World Matrix).
-     * @details Accesible públicamente para ser consumida por el sistema de renderizado.
-     */
-    XMMATRIX matrix;
+    // Método para trasladar la posición del objeto
+    // @param translation: Vector que representa la cantidad de traslado en cada eje
+    void
+        translate(const EU::Vector3& translation);
 
 private:
-    EU::Vector3 position;  ///< Coordenadas XYZ de posición.
-    EU::Vector3 rotation;  ///< Rotación en ejes XYZ (Euler angles).
-    EU::Vector3 scale;     ///< Factor de escala en ejes XYZ.
+    EU::Vector3 position;  // Posición del objeto
+    EU::Vector3 rotation;  // Rotación del objeto
+    EU::Vector3 scale;     // Escala del objeto
+
+public:
+    XMMATRIX matrix;    // Matriz de transformación local
+    XMMATRIX worldMatrix; // Matriz de transformación world
 };

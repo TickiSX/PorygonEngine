@@ -321,3 +321,6 @@ ForwardRenderer::resolveBlendState(const Material* material) const {
 		return m_alphaBlendState ? m_alphaBlendState : m_opaqueBlendState;
 	}
 }
+
+
+

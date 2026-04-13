@@ -12,7 +12,7 @@ class EditorViewportPass;
 class Material;
 
 class
-	ForwardRenderer {
+ForwardRenderer {
 public:
 	HRESULT init(Device& device);
 	void resize(Device& device, unsigned int width, unsigned int height);

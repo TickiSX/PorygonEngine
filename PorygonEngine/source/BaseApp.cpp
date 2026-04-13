@@ -136,7 +136,7 @@ BaseApp::init() {
     m_skyboxTex.CreateCubemap(m_device, m_deviceContext, faces, false);
 
     // --- Inicialización de Actores ---
-    m_cyberGun = EU::MakeShared<Actor>(m_device); // MA5C Actor
+    m_cyberGun = EU::MakeShared<Actor>(m_device); // Se mantiene variable, pero es la MA5C
 
     // Set MA5C Actor
     if (!m_cyberGun.isNull()) {
@@ -171,9 +171,10 @@ BaseApp::init() {
         m_actors.push_back(m_cyberGun);
 
         m_cyberGun->getComponent<Transform>()->setTransform(
-            EU::Vector3(2.0f, -1.90f, 11.60f),
-            EU::Vector3(-0.60f, 3.0f, -0.20f),
-            EU::Vector3(1.0f, 1.0f, 1.0f));
+            EU::Vector3(-0.20f, 3.00f, -5.10f),
+            EU::Vector3(-1.6406f, -1.0995f, -0.1483f), // Rotación en radianes
+            EU::Vector3(1.00f, 1.00f, 1.00f)
+		);
     }
     else {
         ERROR("Main", "InitDevice", "Failed to create MA5C Actor.");
@@ -192,7 +193,7 @@ BaseApp::init() {
         .Add("BITANGENT", DXGI_FORMAT_R32G32B32_FLOAT)
         .Add("TEXCOORD", DXGI_FORMAT_R32G32_FLOAT);
 
-    // Create the Shader Program
+    // Create the Shader Program (¡Corregido con la "s" al final para que coincida con tu archivo!)
     hr = m_shaderProgram.init(m_device, ROOT_PATH + "PBRShaders.hlsl", builder);
     if (FAILED(hr)) {
         ERROR("Main", "InitDevice",
@@ -250,7 +251,6 @@ BaseApp::init() {
     m_cyberGunMaterial.setRoughness(&m_RoughnessSRV);
     m_cyberGunMaterial.setAO(&m_AOSRV);
 
-    // Asignación de Emissive verificada
     if (m_EmissiveSRV.m_textureFromImg) {
         m_cyberGunMaterial.setEmissive(&m_EmissiveSRV);
     }

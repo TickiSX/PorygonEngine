@@ -12,13 +12,9 @@
 #include "Rendering\MaterialInstance.h"
 #include "EngineUtilities\Utilities\Camera.h"
 
-// Variable estática para la operación actual de los Gizmos
 static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
-static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::MODE::LOCAL);
+static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
 
-//--------------------------------------------------------------------------------------
-// Funciones Auxiliares (Namespace Anónimo)
-//--------------------------------------------------------------------------------------
 namespace {
     const char* GetLightTypeLabel(LightType type);
 
@@ -163,36 +159,31 @@ namespace {
     const char* GetLightTypeLabel(LightType type) {
         switch (type) {
         case LightType::Directional: return "Directional";
-        case LightType::Point:       return "Point";
-        case LightType::Spot:        return "Spot";
-        default:                     return "Unknown";
+        case LightType::Point: return "Point";
+        case LightType::Spot: return "Spot";
+        default: return "Unknown";
         }
     }
 
     const char* GetMaterialDomainLabel(MaterialDomain domain) {
         switch (domain) {
-        case MaterialDomain::Opaque:      return "Opaque";
-        case MaterialDomain::Masked:      return "Masked";
+        case MaterialDomain::Opaque: return "Opaque";
+        case MaterialDomain::Masked: return "Masked";
         case MaterialDomain::Transparent: return "Transparent";
-        default:                          return "Unknown";
+        default: return "Unknown";
         }
     }
 
     const char* GetBlendModeLabel(BlendMode blendMode) {
         switch (blendMode) {
-        case BlendMode::Opaque:             return "Opaque";
-        case BlendMode::Alpha:              return "Alpha";
-        case BlendMode::Additive:           return "Additive";
+        case BlendMode::Opaque: return "Opaque";
+        case BlendMode::Alpha: return "Alpha";
+        case BlendMode::Additive: return "Additive";
         case BlendMode::PremultipliedAlpha: return "Premultiplied";
-        default:                            return "Unknown";
+        default: return "Unknown";
         }
     }
-} // Fin namespace anónimo
-
-//--------------------------------------------------------------------------------------
-// Implementación de GUI
-//--------------------------------------------------------------------------------------
-
+}
 void
 GUI::init(Window& window, Device& device, DeviceContext& deviceContext) {
     // Setup Dear ImGui context
@@ -201,13 +192,13 @@ GUI::init(Window& window, Device& device, DeviceContext& deviceContext) {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     ImGuiStyle& style = ImGui::GetStyle();
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
@@ -224,8 +215,6 @@ GUI::init(Window& window, Device& device, DeviceContext& deviceContext) {
     selectedActorIndex = 0;
 }
 
-//--------------------------------------------------------------------------------------
-
 void
 GUI::update(Viewport& viewport, Window& window) {
     // Start the Dear ImGui frame
@@ -235,6 +224,8 @@ GUI::update(Viewport& viewport, Window& window) {
 
     ImGuizmo::BeginFrame();
     ImGuiIO& io = ImGui::GetIO();
+
+    // CORRECCIÓN APLICADA: Uso de ImGuiKey_S
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S, false)) {
         m_requestSaveScene = true;
     }
@@ -247,22 +238,18 @@ GUI::update(Viewport& viewport, Window& window) {
     drawGizmoToolbar();
 }
 
-//--------------------------------------------------------------------------------------
-
 void
 GUI::render() {
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
     ImGuiIO& io = ImGui::GetIO();
-
     // Update and Render additional Platform Windows
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
     }
 }
-
-//--------------------------------------------------------------------------------------
 
 void
 GUI::destroy() {
@@ -272,14 +259,11 @@ GUI::destroy() {
     ImGui::DestroyContext();
 }
 
-//--------------------------------------------------------------------------------------
-
 void
 GUI::vec3Control(const std::string& label, float* values, float resetValue, float columnWidth, bool displayAsDegrees) {
     ImGuiIO& io = ImGui::GetIO();
     auto boldFont = io.Fonts->Fonts[0];
     float displayValues[3] = { values[0], values[1], values[2] };
-
     if (displayAsDegrees) {
         displayValues[0] = RadToDeg(values[0]);
         displayValues[1] = RadToDeg(values[1]);
@@ -303,6 +287,8 @@ GUI::vec3Control(const std::string& label, float* values, float resetValue, floa
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 3.0f, 4.0f });
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+
+    // CORRECCIÓN APLICADA: No usar GImGui, usar funciones públicas
     float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
     ImVec2 buttonSize = { lineHeight, lineHeight };
     const float spacing = ImGui::GetStyle().ItemSpacing.x;
@@ -312,7 +298,6 @@ GUI::vec3Control(const std::string& label, float* values, float resetValue, floa
     const float dragSpeed = displayAsDegrees ? 1.0f : 0.1f;
     const char* dragFormat = displayAsDegrees ? "%.1f deg" : "%.2f";
 
-    // Botón X
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
@@ -331,7 +316,6 @@ GUI::vec3Control(const std::string& label, float* values, float resetValue, floa
     }
     ImGui::SameLine();
 
-    // Botón Y
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
@@ -350,7 +334,6 @@ GUI::vec3Control(const std::string& label, float* values, float resetValue, floa
     }
     ImGui::SameLine();
 
-    // Botón Z
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
@@ -371,16 +354,13 @@ GUI::vec3Control(const std::string& label, float* values, float resetValue, floa
     ImGui::PopStyleVar(2);
     ImGui::PopItemWidth();
     ImGui::EndTable();
+
     ImGui::PopID();
 }
-
-//--------------------------------------------------------------------------------------
 
 void
 GUI::toolTipData() {
 }
-
-//--------------------------------------------------------------------------------------
 
 void
 GUI::appleLiquidStyle(float opacity, ImVec4 accent) {
@@ -406,13 +386,13 @@ GUI::appleLiquidStyle(float opacity, ImVec4 accent) {
     style.ItemSpacing = ImVec2(8, 8);
     style.ItemInnerSpacing = ImVec2(8, 6);
 
-    const float o = opacity;                 // opacidad del "cristal"
+    const float o = opacity;                 // opacidad del “cristal”
     const ImVec4 txt = ImVec4(1, 1, 1, 0.95f);     // texto claro
-    const ImVec4 pane = ImVec4(0.16f, 0.16f, 0.18f, o); // panel "vidrioso" oscuro
+    const ImVec4 pane = ImVec4(0.16f, 0.16f, 0.18f, o); // panel “vidrioso” oscuro
     const ImVec4 paneHi = ImVec4(0.20f, 0.20f, 0.22f, o);
     const ImVec4 paneLo = ImVec4(0.13f, 0.13f, 0.15f, o * 0.85f);
 
-    // Colores base "glass"
+    // Colores base “glass”
     colors[ImGuiCol_Text] = txt;
     colors[ImGuiCol_TextDisabled] = ImVec4(1, 1, 1, 0.45f);
     colors[ImGuiCol_WindowBg] = pane;     // importante: con alpha
@@ -475,39 +455,56 @@ GUI::appleLiquidStyle(float opacity, ImVec4 accent) {
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0, 0, 0, 0.35f);
 }
 
-//--------------------------------------------------------------------------------------
-
 void
 GUI::ToolBar() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("New")) {}
-            if (ImGui::MenuItem("Open")) {}
-            if (ImGui::MenuItem("Save")) {}
+            if (ImGui::MenuItem("New")) {
+                // Acción para "New"
+            }
+            if (ImGui::MenuItem("Open")) {
+                // Acción para "Open"
+            }
+            if (ImGui::MenuItem("Save")) {
+                // Acción para "Save"
+            }
             if (ImGui::MenuItem("Exit")) {
+                // Acción para "Exit"
                 show_exit_popup = true;
                 ImGui::OpenPopup("Exit?");
             }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit")) {
-            if (ImGui::MenuItem("Undo")) {}
-            if (ImGui::MenuItem("Redo")) {}
-            if (ImGui::MenuItem("Cut")) {}
-            if (ImGui::MenuItem("Copy")) {}
-            if (ImGui::MenuItem("Paste")) {}
+            if (ImGui::MenuItem("Undo")) {
+                // Acción para "Undo"
+            }
+            if (ImGui::MenuItem("Redo")) {
+                // Acción para "Redo"
+            }
+            if (ImGui::MenuItem("Cut")) {
+                // Acción para "Cut"
+            }
+            if (ImGui::MenuItem("Copy")) {
+                // Acción para "Copy"
+            }
+            if (ImGui::MenuItem("Paste")) {
+                // Acción para "Paste"
+            }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Tools")) {
-            if (ImGui::MenuItem("Options")) {}
-            if (ImGui::MenuItem("Settings")) {}
+            if (ImGui::MenuItem("Options")) {
+                // Acción para "Options"
+            }
+            if (ImGui::MenuItem("Settings")) {
+                // Acción para "Settings"
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
     }
 }
-
-//--------------------------------------------------------------------------------------
 
 void
 GUI::closeApp() {
@@ -515,7 +512,6 @@ GUI::closeApp() {
         ImGui::OpenPopup("Exit?");
         show_exit_popup = false; // Reset the flag
     }
-
     // Centrar el popup en la pantalla
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -536,8 +532,6 @@ GUI::closeApp() {
         ImGui::EndPopup();
     }
 }
-
-//--------------------------------------------------------------------------------------
 
 void
 GUI::inspectorGeneral(EU::TSharedPointer<Actor> actor) {
@@ -560,7 +554,6 @@ GUI::inspectorGeneral(EU::TSharedPointer<Actor> actor) {
     auto meshRenderer = actor->getComponent<MeshRendererComponent>();
     auto lightComponent = actor->getComponent<LightComponent>();
     auto transform = actor->getComponent<Transform>();
-
     const bool hasMeshRenderer = !meshRenderer.isNull();
     const bool hasLightComponent = !lightComponent.isNull();
     const bool hasTransform = !transform.isNull();
@@ -679,7 +672,6 @@ GUI::inspectorGeneral(EU::TSharedPointer<Actor> actor) {
                             ImGui::SliderFloat(("##AO" + std::to_string(i)).c_str(), &params.ao, 0.0f, 1.0f);
                             DrawPropertyLabel("Normal Scale");
                             ImGui::SliderFloat(("##NormalScale" + std::to_string(i)).c_str(), &params.normalScale, 0.0f, 2.0f);
-
                             if (materialInstance->getEmissive()) {
                                 DrawPropertyLabel("Emissive Strength");
                                 ImGui::SliderFloat(("##EmissiveStrength" + std::to_string(i)).c_str(), &params.emissiveStrength, 0.0f, 8.0f);
@@ -708,7 +700,6 @@ GUI::inspectorGeneral(EU::TSharedPointer<Actor> actor) {
             ImGui::ColorEdit3("##LightColor", &light.color.x);
             DrawPropertyLabel("Intensity");
             ImGui::SliderFloat("##LightIntensity", &light.intensity, 0.0f, 10.0f);
-
             if (light.type == LightType::Directional || light.type == LightType::Spot) {
                 DrawPropertyLabel("Direction");
                 ImGui::SliderFloat3("##LightDirection", &light.direction.x, -1.0f, 1.0f);
@@ -723,16 +714,16 @@ GUI::inspectorGeneral(EU::TSharedPointer<Actor> actor) {
     ImGui::End();
 }
 
-//--------------------------------------------------------------------------------------
-
 void
 GUI::inspectorContainer(EU::TSharedPointer<Actor> actor) {
+    //ImGui::Begin("Transform");
+    // Draw the structure
     vec3Control("Position", const_cast<float*>(actor->getComponent<Transform>()->getPosition().data()), 0.0f, 78.0f, false);
     vec3Control("Rotation", const_cast<float*>(actor->getComponent<Transform>()->getRotation().data()), 0.0f, 78.0f, true);
     vec3Control("Scale", const_cast<float*>(actor->getComponent<Transform>()->getScale().data()), 1.0f, 78.0f, false);
-}
 
-//--------------------------------------------------------------------------------------
+    //ImGui::End();
+}
 
 void
 GUI::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
@@ -754,7 +745,6 @@ GUI::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
         const char* actorTypeLabel = GetActorTypeLabel(actor);
         ImVec4 actorTypeColor = GetActorTypeColor(actor);
         std::string filterLabel = actorName + " " + actorTypeLabel;
-
         if (!filter.PassFilter(filterLabel.c_str())) {
             continue;
         }
@@ -803,10 +793,8 @@ GUI::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
     ImGui::End();
 }
 
-//--------------------------------------------------------------------------------------
-
-void
-GUI::editTransform(Camera& cam, Window& window, EU::TSharedPointer<Actor> actor) {
+void GUI::editTransform(Camera& cam, Window& window, EU::TSharedPointer<Actor> actor)
+{
     if (actor.isNull()) return;
     auto transform = actor->getComponent<Transform>();
     if (transform.isNull()) return;
@@ -816,7 +804,8 @@ GUI::editTransform(Camera& cam, Window& window, EU::TSharedPointer<Actor> actor)
     float rectW = m_viewportSize.x;
     float rectH = m_viewportSize.y;
 
-    if (rectW < 64.0f || rectH < 64.0f) {
+    if (rectW < 64.0f || rectH < 64.0f)
+    {
         m_isUsingGizmo = false;
         return;
     }
@@ -825,9 +814,9 @@ GUI::editTransform(Camera& cam, Window& window, EU::TSharedPointer<Actor> actor)
     float* rot = const_cast<float*>(transform->getRotation().data());
     float* sca = const_cast<float*>(transform->getScale().data());
     float gizmoRotation[3] = {
-      RadToDeg(rot[0]),
-      RadToDeg(rot[1]),
-      RadToDeg(rot[2])
+        RadToDeg(rot[0]),
+        RadToDeg(rot[1]),
+        RadToDeg(rot[2])
     };
 
     float mArr[16];
@@ -858,7 +847,7 @@ GUI::editTransform(Camera& cam, Window& window, EU::TSharedPointer<Actor> actor)
     bool useSnap = ImGui::GetIO().KeyCtrl;
     ImGuizmo::MODE activeGizmoMode = mCurrentGizmoMode;
     if (mCurrentGizmoOperation == ImGuizmo::SCALE) {
-        activeGizmoMode = ImGuizmo::MODE::LOCAL;
+        activeGizmoMode = ImGuizmo::LOCAL;
     }
 
     ImGuizmo::Manipulate(
@@ -873,7 +862,8 @@ GUI::editTransform(Camera& cam, Window& window, EU::TSharedPointer<Actor> actor)
 
     m_isUsingGizmo = ImGuizmo::IsUsing();
 
-    if (m_isUsingGizmo) {
+    if (m_isUsingGizmo)
+    {
         float newPos[3], newRot[3], newSca[3];
         ImGuizmo::DecomposeMatrixToComponents(mArr, newPos, newRot, newSca);
 
@@ -883,34 +873,37 @@ GUI::editTransform(Camera& cam, Window& window, EU::TSharedPointer<Actor> actor)
     }
 }
 
-//--------------------------------------------------------------------------------------
-
-void
-GUI::drawGizmoToolbar() {
+void GUI::drawGizmoToolbar()
+{
+    //ImGui::SetNextWindowPos(ImVec2(300, 150), ImGuiCond_Always);
     ImGui::SetNextWindowBgAlpha(0.0f); // 0 = transparente total
 
     ImGuiWindowFlags window_flags =
         ImGuiWindowFlags_NoDecoration |
-        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_AlwaysAutoResize |/*
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoSavedSettings |*/
         ImGuiWindowFlags_NoFocusOnAppearing |
         ImGuiWindowFlags_NoNav;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
-    if (ImGui::Begin("GizmoToolBar", nullptr, window_flags)) {
-        auto buttonMode = [&](const char* label, ImGuizmo::OPERATION op, const char* shortcut) {
-            bool isActive = (mCurrentGizmoOperation == op);
-            if (isActive)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.4f, 0.8f, 1.0f));
+    if (ImGui::Begin("GizmoToolBar", nullptr, window_flags))
+    {
+        auto buttonMode = [&](const char* label, ImGuizmo::OPERATION op, const char* shortcut)
+            {
+                bool isActive = (mCurrentGizmoOperation == op);
+                if (isActive)
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.4f, 0.8f, 1.0f));
 
-            if (ImGui::Button(label))
-                mCurrentGizmoOperation = op;
+                if (ImGui::Button(label))
+                    mCurrentGizmoOperation = op;
 
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("%s (%s)", label, shortcut);
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("%s (%s)", label, shortcut);
 
-            if (isActive) ImGui::PopStyleColor();
-            ImGui::SameLine();
+                if (isActive) ImGui::PopStyleColor();
+                ImGui::SameLine();
             };
 
         buttonMode("T", ImGuizmo::TRANSLATE, "W");
@@ -922,11 +915,8 @@ GUI::drawGizmoToolbar() {
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
         }
-
-        if (ImGui::Button(mCurrentGizmoMode == ImGuizmo::MODE::WORLD ? "Global" : "Local")) {
-            mCurrentGizmoMode = (mCurrentGizmoMode == ImGuizmo::MODE::WORLD) ? ImGuizmo::MODE::LOCAL : ImGuizmo::MODE::WORLD;
-        }
-
+        if (ImGui::Button(mCurrentGizmoMode == ImGuizmo::WORLD ? "Global" : "Local"))
+            mCurrentGizmoMode = (mCurrentGizmoMode == ImGuizmo::WORLD) ? ImGuizmo::LOCAL : ImGuizmo::WORLD;
         if (!worldLocalSupported) {
             ImGui::PopStyleVar();
             ImGui::PopItemFlag();
@@ -940,10 +930,8 @@ GUI::drawGizmoToolbar() {
     ImGui::PopStyleVar();
 }
 
-//--------------------------------------------------------------------------------------
-
-void
-GUI::drawStudioTopRibbon() {
+void GUI::drawStudioTopRibbon()
+{
     // =========================================================
     // CONFIGURACION GENERAL DE LA BARRA SUPERIOR TIPO STUDIO
     // =========================================================
@@ -951,6 +939,7 @@ GUI::drawStudioTopRibbon() {
 
     const float menuBarHeight = 24.0f;
     const float ribbonHeight = 72.0f;
+    const float totalHeight = menuBarHeight + ribbonHeight;
 
     // -----------------------------
     // 1) MENU SUPERIOR
@@ -970,22 +959,28 @@ GUI::drawStudioTopRibbon() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 4.0f));
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.10f, 0.11f, 0.14f, 1.0f));
 
-    if (ImGui::Begin("##StudioMenuBar", nullptr, menuFlags)) {
-        if (ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
+    if (ImGui::Begin("##StudioMenuBar", nullptr, menuFlags))
+    {
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
                 ImGui::MenuItem("New Place");
                 ImGui::MenuItem("Open Place");
-                if (ImGui::MenuItem("Save", "Ctrl+S")) {
+                if (ImGui::MenuItem("Save", "Ctrl+S"))
+                {
                     m_requestSaveScene = true;
                 }
                 ImGui::Separator();
-                if (ImGui::MenuItem("Exit")) {
+                if (ImGui::MenuItem("Exit"))
+                {
                     show_exit_popup = true;
                 }
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Edit")) {
+            if (ImGui::BeginMenu("Edit"))
+            {
                 ImGui::MenuItem("Undo");
                 ImGui::MenuItem("Redo");
                 ImGui::Separator();
@@ -995,32 +990,37 @@ GUI::drawStudioTopRibbon() {
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("View")) {
+            if (ImGui::BeginMenu("View"))
+            {
                 ImGui::MenuItem("Explorer");
                 ImGui::MenuItem("Properties");
                 ImGui::MenuItem("Toolbox");
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Plugins")) {
+            if (ImGui::BeginMenu("Plugins"))
+            {
                 ImGui::MenuItem("Manage Plugins");
                 ImGui::MenuItem("Plugin Folder");
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Test")) {
+            if (ImGui::BeginMenu("Test"))
+            {
                 ImGui::MenuItem("Play");
                 ImGui::MenuItem("Pause");
                 ImGui::MenuItem("Stop");
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Window")) {
+            if (ImGui::BeginMenu("Window"))
+            {
                 ImGui::MenuItem("Reset Layout");
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Help")) {
+            if (ImGui::BeginMenu("Help"))
+            {
                 ImGui::MenuItem("Documentation");
                 ImGui::MenuItem("About");
                 ImGui::EndMenu();
@@ -1055,121 +1055,138 @@ GUI::drawStudioTopRibbon() {
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.20f, 0.22f, 0.28f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.24f, 0.26f, 0.34f, 1.0f));
 
-    if (ImGui::Begin("##StudioRibbon", nullptr, ribbonFlags)) {
-        auto ribbonButton = [&](const char* id, const char* topText, const char* bottomText, ImVec2 size, bool active = false) -> bool {
-            if (active)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.24f, 0.34f, 0.58f, 1.0f));
+    if (ImGui::Begin("##StudioRibbon", nullptr, ribbonFlags))
+    {
+        auto ribbonButton = [&](const char* id, const char* topText, const char* bottomText, ImVec2 size, bool active = false) -> bool
+            {
+                if (active)
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.24f, 0.34f, 0.58f, 1.0f));
 
-            bool pressed = ImGui::Button(id, size);
+                bool pressed = ImGui::Button(id, size);
 
-            ImVec2 min = ImGui::GetItemRectMin();
-            ImVec2 max = ImGui::GetItemRectMax();
+                ImVec2 min = ImGui::GetItemRectMin();
+                ImVec2 max = ImGui::GetItemRectMax();
 
-            // Texto centrado manualmente dentro del boton
-            ImDrawList* drawList = ImGui::GetWindowDrawList();
-            ImVec2 topSize = ImGui::CalcTextSize(topText);
-            ImVec2 bottomSize = ImGui::CalcTextSize(bottomText);
-            float centerX = (min.x + max.x) * 0.5f;
+                // Texto centrado manualmente dentro del boton
+                ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-            drawList->AddText(
-                ImVec2(centerX - topSize.x * 0.5f, min.y + 10.0f),
-                ImGui::GetColorU32(ImGuiCol_Text),
-                topText
-            );
+                ImVec2 topSize = ImGui::CalcTextSize(topText);
+                ImVec2 bottomSize = ImGui::CalcTextSize(bottomText);
 
-            drawList->AddText(
-                ImVec2(centerX - bottomSize.x * 0.5f, min.y + 34.0f),
-                ImGui::GetColorU32(ImGuiCol_TextDisabled),
-                bottomText
-            );
+                float centerX = (min.x + max.x) * 0.5f;
 
-            if (active)
-                ImGui::PopStyleColor();
+                drawList->AddText(
+                    ImVec2(centerX - topSize.x * 0.5f, min.y + 10.0f),
+                    ImGui::GetColorU32(ImGuiCol_Text),
+                    topText
+                );
 
-            return pressed;
+                drawList->AddText(
+                    ImVec2(centerX - bottomSize.x * 0.5f, min.y + 34.0f),
+                    ImGui::GetColorU32(ImGuiCol_TextDisabled),
+                    bottomText
+                );
+
+                if (active)
+                    ImGui::PopStyleColor();
+
+                return pressed;
             };
 
-        auto separatorGroup = [&]() {
-            ImGui::SameLine();
-            ImGui::Dummy(ImVec2(6.0f, 1.0f));
-            ImGui::SameLine();
+        auto separatorGroup = [&]()
+            {
+                ImGui::SameLine();
+                ImGui::Dummy(ImVec2(6.0f, 1.0f));
+                ImGui::SameLine();
 
-            ImVec2 p = ImGui::GetCursorScreenPos();
-            ImDrawList* draw = ImGui::GetWindowDrawList();
-            draw->AddLine(
-                ImVec2(p.x, p.y),
-                ImVec2(p.x, p.y + 48.0f),
-                IM_COL32(80, 80, 90, 255),
-                1.0f
-            );
+                ImVec2 p = ImGui::GetCursorScreenPos();
+                ImDrawList* draw = ImGui::GetWindowDrawList();
+                draw->AddLine(
+                    ImVec2(p.x, p.y),
+                    ImVec2(p.x, p.y + 48.0f),
+                    IM_COL32(80, 80, 90, 255),
+                    1.0f
+                );
 
-            ImGui::Dummy(ImVec2(8.0f, 48.0f));
-            ImGui::SameLine();
+                ImGui::Dummy(ImVec2(8.0f, 48.0f));
+                ImGui::SameLine();
             };
 
         const ImVec2 btnSize(72.0f, 52.0f);
 
         // Herramientas de transformacion
-        if (ribbonButton("##Select", "Select", "Cursor", btnSize, false)) {
+        if (ribbonButton("##Select", "Select", "Cursor", btnSize, false))
+        {
             // modo seleccion
         }
         ImGui::SameLine();
 
-        if (ribbonButton("##Move", "Move", "W", btnSize, mCurrentGizmoOperation == ImGuizmo::TRANSLATE)) {
+        if (ribbonButton("##Move", "Move", "W", btnSize, mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+        {
             mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
         }
         ImGui::SameLine();
 
-        if (ribbonButton("##Scale", "Scale", "R", btnSize, mCurrentGizmoOperation == ImGuizmo::SCALE)) {
+        if (ribbonButton("##Scale", "Scale", "R", btnSize, mCurrentGizmoOperation == ImGuizmo::SCALE))
+        {
             mCurrentGizmoOperation = ImGuizmo::SCALE;
         }
         ImGui::SameLine();
 
-        if (ribbonButton("##Rotate", "Rotate", "E", btnSize, mCurrentGizmoOperation == ImGuizmo::ROTATE)) {
+        if (ribbonButton("##Rotate", "Rotate", "E", btnSize, mCurrentGizmoOperation == ImGuizmo::ROTATE))
+        {
             mCurrentGizmoOperation = ImGuizmo::ROTATE;
         }
         ImGui::SameLine();
 
-        if (ribbonButton("##Transform", "Transform", "Tool", btnSize, false)) {
+        if (ribbonButton("##Transform", "Transform", "Tool", btnSize, false))
+        {
             // herramienta extra
         }
 
         separatorGroup();
 
         // Creacion / escena
-        if (ribbonButton("##Part", "Part", "Mesh", btnSize, false)) {
+        if (ribbonButton("##Part", "Part", "Mesh", btnSize, false))
+        {
             // crear parte
         }
         ImGui::SameLine();
 
-        if (ribbonButton("##Terrain", "Terrain", "Edit", btnSize, false)) {
+        if (ribbonButton("##Terrain", "Terrain", "Edit", btnSize, false))
+        {
             // abrir terrain tools
         }
         ImGui::SameLine();
 
-        if (ribbonButton("##Material", "Material", "Editor", btnSize, false)) {
+        if (ribbonButton("##Material", "Material", "Editor", btnSize, false))
+        {
             // material editor
         }
         ImGui::SameLine();
 
-        if (ribbonButton("##Color", "Color", "Picker", btnSize, false)) {
+        if (ribbonButton("##Color", "Color", "Picker", btnSize, false))
+        {
             // color picker
         }
 
         separatorGroup();
 
         // Ventanas / paneles
-        if (ribbonButton("##Explorer", "Explorer", "Panel", btnSize, false)) {
+        if (ribbonButton("##Explorer", "Explorer", "Panel", btnSize, false))
+        {
             // toggle explorer
         }
         ImGui::SameLine();
 
-        if (ribbonButton("##Properties", "Properties", "Panel", btnSize, false)) {
+        if (ribbonButton("##Properties", "Properties", "Panel", btnSize, false))
+        {
             // toggle properties
         }
         ImGui::SameLine();
 
-        if (ribbonButton("##Toolbox", "Toolbox", "Assets", btnSize, false)) {
+        if (ribbonButton("##Toolbox", "Toolbox", "Assets", btnSize, false))
+        {
             // toggle toolbox
         }
     }
@@ -1179,18 +1196,18 @@ GUI::drawStudioTopRibbon() {
     ImGui::PopStyleVar(3);
 }
 
-//--------------------------------------------------------------------------------------
-
-void
-GUI::drawViewportPanel(ID3D11ShaderResourceView* viewportSRV) {
+void GUI::drawViewportPanel(ID3D11ShaderResourceView* viewportSRV)
+{
     ImGuiWindowFlags flags =
         ImGuiWindowFlags_NoScrollbar |
         ImGuiWindowFlags_NoScrollWithMouse |
+
         ImGuiWindowFlags_NoCollapse;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-    if (ImGui::Begin("Viewport", nullptr, flags)) {
+    if (ImGui::Begin("Viewport", nullptr, flags))
+    {
         m_viewportDrawList = ImGui::GetWindowDrawList();
 
         ImVec2 panelMin = ImGui::GetCursorScreenPos();
@@ -1199,10 +1216,12 @@ GUI::drawViewportPanel(ID3D11ShaderResourceView* viewportSRV) {
         if (panelSize.x < 1.0f) panelSize.x = 1.0f;
         if (panelSize.y < 1.0f) panelSize.y = 1.0f;
 
-        if (viewportSRV) {
+        if (viewportSRV)
+        {
             ImGui::Image((ImTextureID)viewportSRV, panelSize);
         }
-        else {
+        else
+        {
             ImGui::InvisibleButton("##ViewportSurface", panelSize);
             ImVec2 itemMin = ImGui::GetItemRectMin();
             ImVec2 itemMax = ImGui::GetItemRectMax();
@@ -1231,10 +1250,8 @@ GUI::drawViewportPanel(ID3D11ShaderResourceView* viewportSRV) {
     ImGui::PopStyleVar();
 }
 
-//--------------------------------------------------------------------------------------
-
-void
-GUI::drawEditorDockspace() {
+void GUI::drawEditorDockspace()
+{
     ImGuiViewport* mainViewport = ImGui::GetMainViewport();
 
     // Debe coincidir con la altura total que ocupa tu ribbon superior

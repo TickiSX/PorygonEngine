@@ -184,6 +184,7 @@ namespace {
         }
     }
 }
+
 void
 GUI::init(Window& window, Device& device, DeviceContext& deviceContext) {
     // Setup Dear ImGui context
@@ -225,7 +226,6 @@ GUI::update(Viewport& viewport, Window& window) {
     ImGuizmo::BeginFrame();
     ImGuiIO& io = ImGui::GetIO();
 
-    // CORRECCIÓN: Uso de ImGuiKey_S
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S, false)) {
         m_requestSaveScene = true;
     }
@@ -288,7 +288,6 @@ GUI::vec3Control(const std::string& label, float* values, float resetValue, floa
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 3.0f, 4.0f });
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
 
-    // CORRECCIÓN: Uso de GetFontSize()
     float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
     ImVec2 buttonSize = { lineHeight, lineHeight };
     const float spacing = ImGui::GetStyle().ItemSpacing.x;
@@ -763,7 +762,9 @@ GUI::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
         }
 
         ImVec2 rowSize(ImGui::GetContentRegionAvail().x, 42.0f);
-        if (ImGui::Selectable("##actorRow", isSelected, ImGuiSelectableFlags_SpanAvailWidth, rowSize)) {
+
+        // CORRECCIÓN: Se reemplazó el flag ImGuiSelectableFlags_SpanAvailWidth (que no existe estándar) por 0
+        if (ImGui::Selectable("##actorRow", isSelected, 0, rowSize)) {
             selectedActorIndex = i;
         }
 
@@ -875,14 +876,11 @@ void GUI::editTransform(Camera& cam, Window& window, EU::TSharedPointer<Actor> a
 
 void GUI::drawGizmoToolbar()
 {
-    //ImGui::SetNextWindowPos(ImVec2(300, 150), ImGuiCond_Always);
     ImGui::SetNextWindowBgAlpha(0.0f); // 0 = transparente total
 
     ImGuiWindowFlags window_flags =
         ImGuiWindowFlags_NoDecoration |
-        ImGuiWindowFlags_AlwaysAutoResize |/*
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoSavedSettings |*/
+        ImGuiWindowFlags_AlwaysAutoResize |
         ImGuiWindowFlags_NoFocusOnAppearing |
         ImGuiWindowFlags_NoNav;
 
@@ -911,16 +909,19 @@ void GUI::drawGizmoToolbar()
         buttonMode("S", ImGuizmo::SCALE, "R");
 
         const bool worldLocalSupported = (mCurrentGizmoOperation != ImGuizmo::SCALE);
+
+        // CORRECCIÓN: Uso de la API moderna de ImGui para deshabilitar botones
         if (!worldLocalSupported) {
-            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+            ImGui::BeginDisabled(true);
         }
+
         if (ImGui::Button(mCurrentGizmoMode == ImGuizmo::WORLD ? "Global" : "Local"))
             mCurrentGizmoMode = (mCurrentGizmoMode == ImGuizmo::WORLD) ? ImGuizmo::LOCAL : ImGuizmo::WORLD;
+
         if (!worldLocalSupported) {
-            ImGui::PopStyleVar();
-            ImGui::PopItemFlag();
-            if (ImGui::IsItemHovered()) {
+            ImGui::EndDisabled();
+            // El flag para ver tooltips en items deshabilitados si está disponible
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
                 ImGui::SetTooltip("Scale uses local orientation. World/Local affects Move and Rotate.");
             }
         }

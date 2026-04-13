@@ -63,55 +63,52 @@ private:
     DepthStencilView                    m_depthStencilView;
     Viewport                            m_viewport;
     ShaderProgram                       m_shaderProgram;
+
     bool                                m_d3dReady = false;
     Buffer                              m_constantBuffer;
     CBMain                              m_constantBufferStruct;
 
-    // Textures (Solo MA5C)
-    Texture m_AlbedoSRV;
-    Texture m_MetallicSRV;
-    Texture m_RoughnessSRV;
-    Texture m_AOSRV;
-    Texture m_NormalSRV;
-    Texture m_EmissiveSRV;
+    // Textures (MA5C)
+    Texture                             m_AlbedoSRV;
+    Texture                             m_MetallicSRV;
+    Texture                             m_RoughnessSRV;
+    Texture                             m_AOSRV;
+    Texture                             m_NormalSRV;
+    Texture                             m_EmissiveSRV;
 
     Camera                              m_camera;
     SceneGraph                          m_sceneGraph;
 
-    // Actores
     std::vector<EU::TSharedPointer<Actor>> m_actors;
-    EU::TSharedPointer<Actor> m_cyberGun; // Actor del MA5C
-    EU::TSharedPointer<Actor> m_directionalLightActor;
+    EU::TSharedPointer<Actor>           m_cyberGun; // Se mantiene la variable, pero representa el MA5C
+    EU::TSharedPointer<Actor>           m_directionalLightActor;
 
-    // Modelos
-    Model3D* m_model = nullptr; // Modelo del MA5C
+    Model3D* m_model = nullptr;
 
     GUI                                 m_gui;
     bool                                m_guiInitialized = false;
     EU::Vector3                         m_cameraPos;
 
-    // Entorno y Renderizado
     Skybox                              m_skybox;
     Texture                             m_skyboxTex;
     RasterizerState                     m_defaultRasterizer;
     DepthStencilState                   m_defaultDepthStencil;
     SamplerState                        m_defaultSampler;
 
-    // Mallas y Materiales (Solo MA5C)
     Mesh                                m_cyberGunRenderMesh;
+
     Material                            m_pbrMaterial;
     Material                            m_transparentPbrMaterial;
     MaterialInstance                    m_cyberGunMaterial;
 
-    // Viewport y Pasos de Render
     EditorViewportPass                  m_editorViewportPass;
     ForwardRenderer                     m_forwardRenderer;
     RenderScene                         m_renderScene;
 
-    // Variables de control del Viewport
     bool                                m_editorViewportResizePending = false;
     unsigned int                        m_pendingViewportWidth = 1;
     unsigned int                        m_pendingViewportHeight = 1;
+
     unsigned int                        m_lastRequestedViewportWidth = 1;
     unsigned int                        m_lastRequestedViewportHeight = 1;
     int                                 m_viewportResizeStableFrames = 0;

@@ -465,6 +465,7 @@
     <ClCompile Include="source\Texture.cpp" />
     <ClCompile Include="source\Viewport.cpp" />
     <ClCompile Include="source\Window.cpp" />
+    <ClCompile Include="temp_vela_names.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Imgui\imgui-docking-znly-docking\backends\imgui_impl_dx11.h" />

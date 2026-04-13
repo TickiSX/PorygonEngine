@@ -170,11 +170,11 @@ BaseApp::init() {
         m_cyberGun->setName("MA5C_AssaultRifle");
         m_actors.push_back(m_cyberGun);
 
+        // Transform actualizado para iniciar en la posición exacta de la captura
         m_cyberGun->getComponent<Transform>()->setTransform(
             EU::Vector3(-0.20f, 3.00f, -5.10f),
             EU::Vector3(-1.6406f, -1.0995f, -0.1483f), // Rotación en radianes
-            EU::Vector3(1.00f, 1.00f, 1.00f)
-		);
+            EU::Vector3(1.00f, 1.00f, 1.00f));
     }
     else {
         ERROR("Main", "InitDevice", "Failed to create MA5C Actor.");
@@ -193,7 +193,7 @@ BaseApp::init() {
         .Add("BITANGENT", DXGI_FORMAT_R32G32B32_FLOAT)
         .Add("TEXCOORD", DXGI_FORMAT_R32G32_FLOAT);
 
-    // Create the Shader Program (¡Corregido con la "s" al final para que coincida con tu archivo!)
+    // Create the Shader Program (Corregido con la "s" al final para que coincida con tu archivo)
     hr = m_shaderProgram.init(m_device, ROOT_PATH + "PBRShaders.hlsl", builder);
     if (FAILED(hr)) {
         ERROR("Main", "InitDevice",

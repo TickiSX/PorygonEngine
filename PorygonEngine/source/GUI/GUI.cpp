@@ -225,7 +225,7 @@ GUI::update(Viewport& viewport, Window& window) {
     ImGuizmo::BeginFrame();
     ImGuiIO& io = ImGui::GetIO();
 
-    // CORRECCIÓN APLICADA: Uso de ImGuiKey_S
+    // CORRECCIÓN: Uso de ImGuiKey_S
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S, false)) {
         m_requestSaveScene = true;
     }
@@ -288,7 +288,7 @@ GUI::vec3Control(const std::string& label, float* values, float resetValue, floa
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 3.0f, 4.0f });
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
 
-    // CORRECCIÓN APLICADA: No usar GImGui, usar funciones públicas
+    // CORRECCIÓN: Uso de GetFontSize()
     float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
     ImVec2 buttonSize = { lineHeight, lineHeight };
     const float spacing = ImGui::GetStyle().ItemSpacing.x;

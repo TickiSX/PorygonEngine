@@ -530,12 +530,14 @@
     <None Include="bin\PorygonEngine.fx">
       <FileType>Document</FileType>
     </None>
-    <None Include="PBRShaders.hlsl">
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Skybox.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\Skybox.hlsl">
+    <None Include="bin\PBRShaders.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

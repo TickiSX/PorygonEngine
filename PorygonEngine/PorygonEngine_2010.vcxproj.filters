@@ -348,13 +348,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PBRShaders.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="bin\PorygonEngine.fx">
       <Filter>Shaders</Filter>
     </None>
     <None Include="bin\Skybox.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="bin\PBRShaders.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

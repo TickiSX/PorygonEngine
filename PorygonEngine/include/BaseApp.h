@@ -1,4 +1,8 @@
-﻿#pragma once
+﻿/** * @file BaseApp.h
+ * @brief Declara la API de BaseApp dentro del subsistema Core.
+ * @ingroup core
+ */
+#pragma once
 #include "Prerequisites.h"
 #include "Window.h"
 #include "Device.h"
@@ -29,104 +33,121 @@
 #include "Rendering/RenderScene.h"
 #include <string>
 
-extern IMGUI_IMPL_API
-LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-class
-    BaseApp {
+/** * @class BaseApp
+ * @brief Coordina el ciclo de vida principal de Wildvine Engine.
+ * * `BaseApp` inicializa la ventana, el dispositivo grafico, la interfaz del editor,
+ * la escena de prueba y el pipeline de render. Tambien administra el bucle principal
+ * de actualizacion, la serializacion basica de escena y la respuesta a cambios de tamano.
+ */
+class BaseApp {
 public:
-    BaseApp() = default;
-    ~BaseApp() { destroy(); }
+	BaseApp() = default;
+	~BaseApp() { destroy(); }
 
-    HRESULT
-        awake();
+	/**	 * @brief Prepara subsistemas previos al render.	 * @return `S_OK` si la aplicacion queda lista para continuar la inicializacion.	 */
+	HRESULT awake();
 
-    int
-        run(HINSTANCE hInst, int nCmdShow);
+	/**	 * @brief Ejecuta el bucle principal de la aplicacion.	 * @param hInst Instancia Win32 actual.	 * @param nCmdShow Modo inicial de visualizacion de la ventana.	 * @return Codigo de salida del proceso.	 */
+	int run(HINSTANCE hInst, int nCmdShow);
 
-    HRESULT
-        init();
+	/**	 * @brief Inicializa recursos graficos, escena, materiales y renderer.	 * @return `S_OK` cuando todos los recursos base quedan listos.	 */
+	HRESULT init();
 
-    void
-        update(float deltaTime);
+	/**	 * @brief Ejecuta la logica por frame y sincroniza GUI, camara y escena.	 * @param deltaTime Tiempo transcurrido desde el frame anterior.	 */
+	void update(float deltaTime);
 
-    void
-        render();
+	/**	 * @brief Emite el frame actual en el viewport del editor y en el back buffer final.	 */
+	void render();
 
-    void
-        destroy();
+	/**	 * @brief Libera recursos del motor en orden seguro de destruccion.	 */
+	void destroy();
 
-    void
-        onResize(unsigned int newW, unsigned int newH);
+	/**	 * @brief Reconstuye recursos dependientes de la resolucion principal.	 * @param newW Nuevo ancho del area cliente.	 * @param newH Nuevo alto del area cliente.	 */
+	void onResize(unsigned int newW, unsigned int newH);
 
-    void handleEditorViewportResize();
+	/**	 * @brief Atiende cambios diferidos del viewport interno del editor.	 */
+	void handleEditorViewportResize();
 
-    bool saveScene(const std::string& path);
-    bool loadScene(const std::string& path);
-    std::string getDefaultScenePath() const;
+	/**	 * @brief Serializa la escena actual a disco.	 * @param path Ruta de salida del archivo `.wvscene`.	 * @return `true` si la escena se guarda correctamente.	 */
+	bool saveScene(const std::string& path);
+
+	/**	 * @brief Carga una escena serializada previamente.	 * @param path Ruta del archivo `.wvscene`.	 * @return `true` si el contenido se pudo leer y aplicar.	 */
+	bool loadScene(const std::string& path);
+
+	/**	 * @brief Devuelve la ruta por defecto usada por el editor para persistencia rapida.	 */
+	std::string getDefaultScenePath() const;
 
 private:
-    static LRESULT CALLBACK
-        WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-    Window                              m_window;
-    Device                              m_device;
-    DeviceContext                       m_deviceContext;
-    SwapChain                           m_swapChain;
-    Texture                             m_backBuffer;
-    RenderTargetView                    m_renderTargetView;
-    Texture                             m_depthStencil;
-    DepthStencilView                    m_depthStencilView;
-    Viewport                            m_viewport;
-    ShaderProgram                       m_shaderProgram;
-    bool m_d3dReady = false;
-    Buffer m_constantBuffer;
-    CBMain m_constantBufferStruct;
+	Window                              m_window;
+	Device								m_device;
+	DeviceContext						m_deviceContext;
+	SwapChain                           m_swapChain;
+	Texture                             m_backBuffer;
+	RenderTargetView					m_renderTargetView;
+	Texture                             m_depthStencil;
+	DepthStencilView					m_depthStencilView;
+	Viewport                            m_viewport;
+	ShaderProgram						m_shaderProgram;
+	bool								m_d3dReady = false;
 
-    // Textures (Solo las que usa el MA5C)
-    Texture m_AlbedoSRV;
-    Texture m_MetallicSRV;
-    Texture m_RoughnessSRV;
-    Texture m_AOSRV;
-    Texture m_NormalSRV;
-    Texture m_EmissiveSRV;
+	Buffer								m_constantBuffer;
+	CBPerFrame							m_constantBufferStruct;
 
-    Camera                              m_camera;
+	// Textures
+	Texture m_AlbedoSRV;
+	Texture m_MetallicSRV;
+	Texture m_RoughnessSRV;
+	Texture m_AOSRV;
+	Texture m_NormalSRV;
+	Texture m_EmissiveSRV;
+	Texture m_drakefireAlbedoSRV;
+	Texture m_drakefireNormalSRV;
+	Texture m_drakefireMetallicSRV;
+	Texture m_drakefireRoughnessSRV;
+	Texture m_drakefireAOSRV;
 
-    SceneGraph                          m_sceneGraph;
-    std::vector<EU::TSharedPointer<Actor>> m_actors;
-    EU::TSharedPointer<Actor> m_cyberGun; // Esta variable ahora controla tu MA5C
-    EU::TSharedPointer<Actor> m_directionalLightActor;
+	Camera								m_camera;
+	SceneGraph							m_sceneGraph;
+	std::vector<EU::TSharedPointer<Actor>> m_actors;
+	EU::TSharedPointer<Actor> m_cyberGun;
+	EU::TSharedPointer<Actor> m_drakefirePistol;
+	EU::TSharedPointer<Actor> m_directionalLightActor;
 
-    Model3D* m_model = nullptr;
+	Model3D* m_model;
+	Model3D* m_drakefireModel = nullptr;
 
-    GUI                                 m_gui;
-    bool m_guiInitialized = false;
-    EU::Vector3 m_cameraPos;
+	GUI									m_gui;
+	bool								m_guiInitialized = false;
+	EU::Vector3							m_cameraPos;
 
-    Skybox m_skybox;
-    Texture                             m_skyboxTex;
-    RasterizerState m_defaultRasterizer;
-    DepthStencilState m_defaultDepthStencil;
-    SamplerState m_defaultSampler;
+	Skybox								m_skybox;
+	Texture								m_skyboxTex;
+	RasterizerState						m_defaultRasterizer;
+	DepthStencilState					m_defaultDepthStencil;
+	SamplerState						m_defaultSampler;
 
-    Mesh m_cyberGunRenderMesh;
+	Mesh m_cyberGunRenderMesh;
+	Mesh m_drakefireRenderMesh;
 
-    Material m_pbrMaterial;
-    Material m_transparentPbrMaterial;
-    MaterialInstance m_cyberGunMaterial;
+	Material m_pbrMaterial;
+	Material m_transparentPbrMaterial;
+	MaterialInstance m_cyberGunMaterial;
+	MaterialInstance m_drakefireMaterial;
 
-    EditorViewportPass m_editorViewportPass;
-    ForwardRenderer m_forwardRenderer;
-    RenderScene m_renderScene;
+	EditorViewportPass					m_editorViewportPass;
+	ForwardRenderer						m_forwardRenderer;
+	RenderScene							m_renderScene;
 
-    bool m_editorViewportResizePending = false;
-    unsigned int m_pendingViewportWidth = 1;
-    unsigned int m_pendingViewportHeight = 1;
+	bool m_editorViewportResizePending = false;
+	unsigned int m_pendingViewportWidth = 1;
+	unsigned int m_pendingViewportHeight = 1;
 
-    unsigned int m_lastRequestedViewportWidth = 1;
-    unsigned int m_lastRequestedViewportHeight = 1;
-    int m_viewportResizeStableFrames = 0;
+	unsigned int m_lastRequestedViewportWidth = 1;
+	unsigned int m_lastRequestedViewportHeight = 1;
+	int m_viewportResizeStableFrames = 0;
 };

@@ -4,23 +4,20 @@
 class Mesh;
 class MaterialInstance;
 
-enum class
-	MaterialDomain {
+enum class MaterialDomain {
 	Opaque = 0,
 	Masked,
 	Transparent
 };
 
-enum class
-	BlendMode {
+enum class BlendMode {
 	Opaque = 0,
 	Alpha,
 	Additive,
 	PremultipliedAlpha
 };
 
-enum class
-	RenderPassType {
+enum class RenderPassType {
 	Shadow = 0,
 	Opaque,
 	Skybox,
@@ -28,15 +25,13 @@ enum class
 	Editor
 };
 
-enum class
-	LightType {
+enum class LightType {
 	Directional = 0,
 	Point,
 	Spot
 };
 
-struct
-	LightData {
+struct LightData {
 	LightType type = LightType::Directional;
 	EU::Vector3 color = EU::Vector3(1.0f, 1.0f, 1.0f);
 	float intensity = 1.0f;
@@ -48,8 +43,7 @@ struct
 	float spotAngle = 0.0f;
 };
 
-struct
-	MaterialParams {
+struct MaterialParams {
 	XMFLOAT4 baseColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	float metallic = 1.0f;
 	float roughness = 1.0f;
@@ -59,25 +53,26 @@ struct
 	float alphaCutoff = 0.5f;
 };
 
-struct
-	CBPerFrame {
+struct CBPerFrame {
 	XMFLOAT4X4 View{};
 	XMFLOAT4X4 Projection{};
+	XMFLOAT4X4 LightViewProjection{}; // <-- Añadido para cálculo de sombras
+
 	EU::Vector3 CameraPos{};
 	float pad0 = 0.0f;
+
 	EU::Vector3 LightDir = EU::Vector3(0.0f, -1.0f, 0.0f);
 	float pad1 = 0.0f;
+
 	EU::Vector3 LightColor = EU::Vector3(1.0f, 1.0f, 1.0f);
 	float pad2 = 0.0f;
 };
 
-struct
-	CBPerObject {
+struct CBPerObject {
 	XMFLOAT4X4 World{};
 };
 
-struct
-	CBPerMaterial {
+struct CBPerMaterial {
 	XMFLOAT4 BaseColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	float Metallic = 1.0f;
 	float Roughness = 1.0f;
@@ -93,8 +88,7 @@ struct
 	float pad5 = 0.0f;
 };
 
-struct
-	RenderObject {
+struct RenderObject {
 	Mesh* mesh = nullptr;
 	MaterialInstance* materialInstance = nullptr;
 	std::vector<MaterialInstance*> materialInstances;

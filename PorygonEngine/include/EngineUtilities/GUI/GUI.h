@@ -1,8 +1,13 @@
-﻿#pragma once
+﻿/**
+ * @file GUI.h
+ * @brief Declara la API de GUI dentro del subsistema GUI.
+ * @ingroup gui
+ */
+#pragma once
 #include "Prerequisites.h"
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
-// #include <imgui_internal.h> // <- ¡Eliminado! Ya no dependemos de la API interna.
+#include <imgui_internal.h>
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 #include "ImGuizmo.h"
@@ -14,21 +19,40 @@ class DeviceContext;
 class Actor;
 class Camera;
 
+/**
+ * @class GUI
+ * @brief Centraliza la interfaz del editor construida sobre ImGui e ImGuizmo.
+ *
+ * La clase expone paneles de viewport, depuracion de render, outliner e inspector.
+ * Tambien recopila interacciones del usuario que despues consume `BaseApp`.
+ */
 class
     GUI {
 public:
     GUI() = default;
     ~GUI() = default;
 
+    /**
+     * @brief Inicializa estado interno previo a la integracion con ImGui.
+     */
     void
         awake();
 
+    /**
+     * @brief Configura los backends de ImGui para Win32 y Direct3D 11.
+     */
     void
         init(Window& window, Device& device, DeviceContext& deviceContext);
 
+    /**
+     * @brief Actualiza el frame de ImGui y el estado de la ventana del editor.
+     */
     void
         update(Viewport& viewport, Window& window);
 
+    /**
+     * @brief Renderiza todos los paneles activos del editor.
+     */
     void
         render();
 
@@ -81,8 +105,21 @@ public:
 
     void drawViewportPanel(ID3D11ShaderResourceView* viewportSRV);
 
+    void drawRenderDebugPanel(ID3D11ShaderResourceView* preShadowSRV,
+        ID3D11ShaderResourceView* finalViewportSRV,
+        ID3D11ShaderResourceView* shadowMapSRV);
+
+    void drawGBufferDebugPanel(ID3D11ShaderResourceView* albedoMetallicSRV,
+        ID3D11ShaderResourceView* normalRoughnessSRV,
+        ID3D11ShaderResourceView* worldAoSRV,
+        ID3D11ShaderResourceView* emissiveAlphaSRV);
+
     void drawEditorDockspace();
 
+    /**
+     * @brief Consume de forma atomica la solicitud de guardado emitida desde la UI.
+     * @return `true` una sola vez por peticion de guardado.
+     */
     bool
         consumeSaveSceneRequest() {
         const bool requested = m_requestSaveScene;
@@ -103,10 +140,13 @@ private:
     bool m_viewportActive = false;
 
 public:
-    bool m_isUsingGizmo = false;
-    int selectedActorIndex = -1;
-    ImVec2 m_viewportPos = ImVec2(0.0f, 0.0f);
-    ImVec2 m_viewportSize = ImVec2(0.0f, 0.0f);
-    bool m_viewportHovered = false;
-    bool m_viewportFocused = false;
+    bool m_isUsingGizmo = false;               ///< Indica si el gizmo esta capturando entrada del usuario.
+    bool m_visualizeDeferredShadowFactor = false; ///< Muestra el factor de sombra diferido en escala de grises.
+    int selectedActorIndex = -1;               ///< Indice del actor seleccionado en el outliner.
+    ImVec2 m_viewportPos = ImVec2(0.0f, 0.0f); ///< Posicion del panel de viewport en pantalla.
+    ImVec2 m_viewportSize = ImVec2(0.0f, 0.0f);///< Tamano actual del viewport del editor.
+    bool m_viewportHovered = false;            ///< Indica si el cursor esta sobre el viewport.
+    bool m_viewportFocused = false;            ///< Indica si el viewport tiene foco de entrada.
 };
+
+

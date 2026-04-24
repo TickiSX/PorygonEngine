@@ -201,8 +201,8 @@ BaseApp::init() {
         return hr;
     }
 
-    // Create the constant buffers
-    hr = m_constantBuffer.init(m_device, sizeof(CBMain));
+    // Create the constant buffers (Actualizado a CBPerFrame para que compile con tu RenderTypes.h)
+    hr = m_constantBuffer.init(m_device, sizeof(CBPerFrame));
     if (FAILED(hr)) {
         ERROR("Main", "InitDevice",
             ("Failed to initialize m_constantBuffer Buffer. HRESULT: " + std::to_string(hr)).c_str());

@@ -454,8 +454,10 @@
     <ClCompile Include="source\GUI\GUI.cpp" />
     <ClCompile Include="source\InputLayout.cpp" />
     <ClCompile Include="source\Model3D.cpp" />
+    <ClCompile Include="source\Rendering\DeferredRenderer.cpp" />
     <ClCompile Include="source\Rendering\ForwardRenderer.cpp" />
     <ClCompile Include="source\Rendering\MaterialInstance.cpp" />
+    <ClCompile Include="source\Rendering\RenderPipeline.cpp" />
     <ClCompile Include="source\Rendering\RenderScene.cpp" />
     <ClCompile Include="source\RenderTargetView.cpp" />
     <ClCompile Include="source\SamplerState.cpp" />
@@ -507,11 +509,14 @@
     <ClInclude Include="Include\Prerequisites.h" />
     <ClInclude Include="include\RasterizerState.h" />
     <ClInclude Include="include\Rendering\ForwardRenderer.h" />
+    <ClInclude Include="include\Rendering\ISceneRenderer.h" />
     <ClInclude Include="include\Rendering\Material.h" />
     <ClInclude Include="include\Rendering\MaterialInstance.h" />
     <ClInclude Include="include\Rendering\Mesh.h" />
+    <ClInclude Include="include\Rendering\RenderPipeline.h" />
     <ClInclude Include="include\Rendering\RenderScene.h" />
     <ClInclude Include="include\Rendering\RenderTypes.h" />
+    <ClInclude Include="include\Rendering\DeferredRenderer.h" />
     <ClInclude Include="include\RenderTargetView.h" />
     <ClInclude Include="include\Resource.h" />
     <ClInclude Include="include\SamplerState.h" />

@@ -173,6 +173,12 @@
     <ClCompile Include="temp_vela_names.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="source\Rendering\DeferredRenderer.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Rendering\RenderPipeline.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">
@@ -345,6 +351,15 @@
     </ClInclude>
     <ClInclude Include="include\ECS\MeshRendererComponent.h">
       <Filter>Include\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\DeferredRenderer.h">
+      <Filter>Include\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\ISceneRenderer.h">
+      <Filter>Include\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\RenderPipeline.h">
+      <Filter>Include\Rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
